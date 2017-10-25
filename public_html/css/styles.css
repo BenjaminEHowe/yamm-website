@@ -1,5 +1,28 @@
+html {
+	position: relative;
+	min-height: 100%;
+}
+
+body {
+	margin-bottom: 80px!important; /* main top padding + footer height */
+}
+
+footer {
+	position: absolute;
+	bottom: 0;
+	width: 100%;
+	height: 60px; /* footer height */
+	line-height: 60px; /* vertically center text */
+	text-align: center;
+	background-color: #f5f5f5;
+}
+
 h1 { 
 	text-align: center;
+}
+
+main {
+	padding-top: 20px;
 }
 
 p {
@@ -14,11 +37,7 @@ p {
 	text-decoration: none;
 }
 
-.container {
-	margin-top: 20px;
-}
-
 .logo {
 	display: block;
-	margin: 0 auto;
+	margin: 0 auto 10px;
 }

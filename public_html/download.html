@@ -4,7 +4,7 @@
 		<meta charset="utf-8">
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
-		<title>YAMM: 404 Not Found</title>
+		<title>YAMM: Download</title>
 		<link rel="stylesheet" href="/css/styles.css">
 		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
 
@@ -43,8 +43,8 @@
 						<li class="nav-item">
 							<a class="nav-link" href="/faq">FAQ</a>
 						</li>
-						<li class="nav-item">
-							<a class="nav-link" href="/download">Download</a>
+						<li class="nav-item active">
+							<a class="nav-link" href="/download">Download <span class="sr-only">(current)</span></a>
 						</li>
 						<li class="nav-item">
 							<a class="nav-link" href="/contact">Contact</a>
@@ -55,9 +55,12 @@
 		</nav>
 
 		<main role="main" class="container">
-			<img src="/img/logo.svg" class="logo" alt="yam" width="349" height="150" />
-			<h1>404: Not Found</h1>
-			<div class="alert alert-danger">The page you were looking for could not be found!</div>
+			<h1>Download</h1>
+			<div class="alert alert-danger"><strong>Please note: </strong> YAMM is currently in <strong>alpha testing</strong>. This means there may be <strong>severe issues</strong> with the code, and that the code has not been thoroughly checked for security issues. Proceed with caution!</div>
+			<p>In order to use YAMM, you need to install Java. We reccomend installing <a href="http://www.oracle.com/technetwork/java/javase/downloads/jre9-downloads-3848532.html">Java 9</a>. If you prefer, you can install <a href="http://www.oracle.com/technetwork/java/javase/downloads/jre8-downloads-2133155.html">Java 8</a>, but users of Oracle Java 8 will also need to install the <a href="http://www.oracle.com/technetwork/java/javase/downloads/jce8-download-2133166.html">Java Cryptography Extension (JCE) Unlimited Strength Jurisdiction Policy Files</a> to allow YAMM to use encryption strong enough to protect your financial information. YAMM also works with <a href="http://openjdk.java.net/">OpenJDK</a>. YAMM is <strong>not compatible</strong> with Java 7 or older as these versions of Java no longer recieve security updates.</p>
+			<h2>Releases</h2>
+			<p>The latest alpha release is <span id="latest-alpha"></span>, which was published <span id="latest-alpha-age"></span>. <a href="#" id="latest-alpha-jar">Download the JAR file here</a>. <em>If you don't already have it, <a href="#" id="latest-alpha-bc">download the Bouncy Castle JAR file here</a>. This needs to be placed in the same directory as YAMM.</em></p>
+			<p>All releases (including previous releases) are <a href="https://github.com/BenjaminEHowe/yamm-client/releases">available on GitHub</a>.</p>
 		</main>
 
 		<footer>
@@ -70,5 +73,34 @@
 		<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh" crossorigin="anonymous"></script>
 		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ" crossorigin="anonymous"></script>
+
+		<!-- moment.js, used for time since release -->
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.19.1/moment.min.js" integrity="sha256-zG8v+NWiZxmjNi+CvUYnZwKtHzFtdO8cAKUIdB8+U9I=" crossorigin="anonymous"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.19.1/locale/en-gb.js" integrity="sha256-aTgx0CTTED3qZtyezqOlG3e04BkBaEzWDwNT1O4TGVo=" crossorigin="anonymous"></script>
+
+		<script>
+			var getReleases = new XMLHttpRequest();
+			getReleases.onreadystatechange = function() {
+				if (this.readyState == 4 && this.status == 200) {
+					var releases = JSON.parse(this.responseText);
+					for (i in releases) {
+						if (releases[i].tag_name.indexOf("alpha") != -1) {
+							document.getElementById("latest-alpha").innerHTML = releases[i].tag_name;
+							document.getElementById("latest-alpha-age").innerHTML = moment(releases[i].created_at).fromNow();
+							for (j in releases[i].assets) {
+								if (releases[i].assets[j].name.indexOf("yamm") != -1) {
+									document.getElementById("latest-alpha-jar").setAttribute("href", releases[i].assets[j].browser_download_url);
+								} else if (releases[i].assets[j].name.indexOf("bcprov") != -1) {
+									document.getElementById("latest-alpha-bc").setAttribute("href", releases[i].assets[j].browser_download_url);
+								}
+							}
+							break;
+						}
+					}
+				}
+			};
+			getReleases.open("GET", "https://api.github.com/repos/BenjaminEHowe/yamm-client/releases", true);
+			getReleases.send();
+		</script>
 	</body>
 </html>
