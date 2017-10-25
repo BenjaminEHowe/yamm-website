@@ -73,7 +73,7 @@
 			</div>
 		</nav>
 
-		<main role="main" class="container">
+		<main class="container">
 			<h1>FAQ</h1>
 			<h2 class="nocount">Contents</h2>
 			<ol>
@@ -95,7 +95,7 @@
 			<p>We think so. Your security credentials only ever leave your computer to be sent to your financial institution - they are never sent to a third-party. When you quit YAMM, your security credentials are encrypted using the password you selected and saved in the folder you specified. We don't think YAMM is any more risky than "ordinary" online banking.</p>
 
 			<h2 id="forgot-password">I forgot my password. Can you remind me what it is?</h2>
-			<p></p><strong>No!</strong> Your YAMM password is used to encrypt and decrypt the data files which YAMM creates. It is <strong>never</strong> sent to a third-party, nor can it be retrieved. You can reset your password by deleting all the files ending in <code>.yamm</code> from the YAMM data folder.</p>
+			<p><strong>No!</strong> Your YAMM password is used to encrypt and decrypt the data files which YAMM creates. It is <strong>never</strong> sent to a third-party, nor can it be retrieved. You can reset your password by deleting all the files ending in <code>.yamm</code> from the YAMM data folder.</p>
 
 			<h2 id="supported-institutions">Which institutions does YAMM support?</h2>
 			<p>At the moment, YAMM only supports <a href="https://www.starlingbank.com/">Starling Bank</a>. Support for other institutions is planned. To request support for a specific institution, <a href="/contact">contact us</a>.</p>
@@ -103,11 +103,9 @@
 			<h2 id="starling-personal-access-token">Starling: where do I find my personal access token?</h2>
 			<p>Firstly, you need to <a href="https://developer.starlingbank.com/signup">create a Starling Developers account</a>. Then, you need to <a href="https://developer.starlingbank.com/connect">connect your Starling Developers account to your Starling Bank account</a>. Finally, you need to <a href="https://developer.starlingbank.com/token/new">create a personal access token</a>. YAMM requires the <code>account:read</code>, <code>balance:read</code>, and <code>transaction:read</code> scopes.</p>
 		</main>
-
+		
 		<footer>
-			<div class="container">
-				<span class="text-muted">Created by <a href="https://www.bh96.uk/">Benjamin Howe</a>. YAMM is <a href="/open-source">open source</a> software.</span>
-			</div>
+			<div class="container text-muted">Created by <a href="https://www.bh96.uk/">Benjamin Howe</a>. YAMM is <a href="/open-source">open source</a> software.</div>
 		</footer>
 
 		<!-- jQuery, Pooper.js, and Bootstrap JavaScript -->
