@@ -10,6 +10,10 @@ if (window.location.href.indexOf("#") == -1) {
 }
 
 if (sessionStorage.port && sessionStorage.secret) { // if YAMM port and secret have been set
+    console.log(params);
+    if (params.length == 2 && params[0].indexOf("port") != -1 && params[1].indexOf("secret") != -1) {
+        window.location.replace(url); // redirect to remove parameters        
+    }
 } else {
     for (i in params) {
         var param = params[i].split("=");
