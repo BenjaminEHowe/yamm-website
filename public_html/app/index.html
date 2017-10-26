@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>YAMM: Placeholder</title>
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
+		<link rel="stylesheet" href="/css/styles.css">
+
+		<!-- favicons -->
+		<link rel="apple-touch-icon" sizes="57x57" href="/apple-icon-57x57.png">
+		<link rel="apple-touch-icon" sizes="60x60" href="/apple-icon-60x60.png">
+		<link rel="apple-touch-icon" sizes="72x72" href="/apple-icon-72x72.png">
+		<link rel="apple-touch-icon" sizes="76x76" href="/apple-icon-76x76.png">
+		<link rel="apple-touch-icon" sizes="114x114" href="/apple-icon-114x114.png">
+		<link rel="apple-touch-icon" sizes="120x120" href="/apple-icon-120x120.png">
+		<link rel="apple-touch-icon" sizes="144x144" href="/apple-icon-144x144.png">
+		<link rel="apple-touch-icon" sizes="152x152" href="/apple-icon-152x152.png">
+		<link rel="apple-touch-icon" sizes="180x180" href="/apple-icon-180x180.png">
+		<link rel="icon" type="image/png" sizes="192x192"  href="/android-icon-192x192.png">
+		<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+		<link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
+		<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+		<link rel="manifest" href="/manifest.json">
+		<meta name="msapplication-TileColor" content="#ffffff">
+		<meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
+		<meta name="theme-color" content="#ffffff">
+	</head>
+	<body>
+
+		<nav class="navbar navbar-expand-lg navbar-light bg-light">
+			<div class="container">
+				<a class="navbar-brand" href="/"><img src="/img/logo-small.svg" alt="YAMM logo" width="70" height="30" /></a>
+				<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
+					<span class="navbar-toggler-icon"></span>
+				</button>
+				<div class="collapse navbar-collapse" id="navbar">
+					<ul class="navbar-nav mr-auto">
+						<li class="nav-item">
+							<a class="nav-link" href="/">About</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link" href="/faq">FAQ</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link" href="/download">Download</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link" href="/contact">Contact</a>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</nav>
+
+		<main class="container">
+			<img src="/img/logo.svg" class="logo" alt="YAMM logo" width="349" height="150" />
+			<h1>Placeholder</h1>
+			<div class="alert alert-warning">This is a placeholder page while the web interface is under construction.</div>
+			<p><strong>YAMM client listening port:</strong> <span id="yamm-port"></span></p>
+			<p><strong>YAMM client secret:</strong> <span id="yamm-secret"></span></p>
+			<p><a href="#" id="main-url">Launch main</a></p>
+			<p><a href="#" id="beta-url">Launch beta</a></p>
+			<p><a href="#" id="alpha-url">Launch alpha</a></p>
+			<p><a href="#" id="local-url">Launch local</a></p>
+		</main>
+		
+		<footer>
+			<div class="container text-muted">Created by <a href="https://www.bh96.uk/">Benjamin Howe</a>. YAMM is <a href="/open-source">open source</a> software.</div>
+		</footer>
+
+		<!-- jQuery, Pooper.js, and Bootstrap JavaScript -->
+		<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh" crossorigin="anonymous"></script>
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ" crossorigin="anonymous"></script>
+		
+		<!-- YAMM JS -->
+		<script src="/js/yamm.js"></script>
+		<script>
+			if (sessionStorage.port && sessionStorage.secret) { // if YAMM port and secret have been set
+				document.getElementById("yamm-port").innerHTML = sessionStorage.port;
+				document.getElementById("yamm-secret").innerHTML = sessionStorage.secret;
+				document.getElementById("main-url").setAttribute("href", "https://yamm.io/app/#port=" + sessionStorage.port + ",secret=" + sessionStorage.secret);
+				document.getElementById("beta-url").setAttribute("href", "https://beta.yamm.io/app/#port=" + sessionStorage.port + ",secret=" + sessionStorage.secret);
+				document.getElementById("alpha-url").setAttribute("href", "https://alpha.yamm.io/app/#port=" + sessionStorage.port + ",secret=" + sessionStorage.secret);
+				document.getElementById("local-url").setAttribute("href", "https://local.yamm.io/app/#port=" + sessionStorage.port + ",secret=" + sessionStorage.secret);
+			}
+		</script>
+	</body>
+</html>
