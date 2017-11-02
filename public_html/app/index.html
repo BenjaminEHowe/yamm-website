@@ -55,15 +55,11 @@
 		</nav>
 
 		<main class="container">
-			<img src="/img/logo.svg" class="logo" alt="YAMM logo" width="349" height="150" />
-			<h1>Placeholder</h1>
-			<div class="alert alert-warning">This is a placeholder page while the web interface is under construction.</div>
 			<p><strong>YAMM client listening port:</strong> <span id="yamm-port"></span></p>
 			<p><strong>YAMM client secret:</strong> <span id="yamm-secret"></span></p>
-			<p><a href="#" id="main-url">Launch main</a></p>
-			<p><a href="#" id="beta-url">Launch beta</a></p>
-			<p><a href="#" id="alpha-url">Launch alpha</a></p>
-			<p><a href="#" id="local-url">Launch local</a></p>
+			<p>Add new account: <a href="javascript:addAccount('Starling')" id="add-starling">Starling Bank</a></p>
+			<div id="accounts"></div>
+			<div id="transactions"></div>
 		</main>
 		
 		<footer>
@@ -81,10 +77,8 @@
 			if (sessionStorage.port && sessionStorage.secret) { // if YAMM port and secret have been set
 				document.getElementById("yamm-port").innerHTML = sessionStorage.port;
 				document.getElementById("yamm-secret").innerHTML = sessionStorage.secret;
-				document.getElementById("main-url").setAttribute("href", "https://yamm.io/app/#port=" + sessionStorage.port + ",secret=" + sessionStorage.secret);
-				document.getElementById("beta-url").setAttribute("href", "https://beta.yamm.io/app/#port=" + sessionStorage.port + ",secret=" + sessionStorage.secret);
-				document.getElementById("alpha-url").setAttribute("href", "https://alpha.yamm.io/app/#port=" + sessionStorage.port + ",secret=" + sessionStorage.secret);
-				document.getElementById("local-url").setAttribute("href", "https://local.yamm.io/app/#port=" + sessionStorage.port + ",secret=" + sessionStorage.secret);
+
+				displayAccounts();
 			}
 		</script>
 	</body>
