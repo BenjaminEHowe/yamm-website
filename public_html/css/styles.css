@@ -48,6 +48,10 @@ p {
 	font-size: 16px;
 }
 
+tr.blank {
+	height: 10px;
+}
+
 .alert-link {
 	text-decoration: underline;
 }
@@ -63,4 +67,17 @@ p {
 
 .navbar {
 	display: block;
+}
+
+.swal2-account-details {
+	max-width: 640px!important;
+	width: 100%!important;
+}
+
+.swal2-account-details .swal2-content {
+	text-align: left!important;
+}
+
+.swal2-account-details table {
+	width: 100%;
 }

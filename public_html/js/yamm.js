@@ -1,3 +1,7 @@
+var yammDB;
+var accounts;
+var transactions;
+
 function addAccount(provider) {
     document.getElementById("main").innerHTML = "<img src='/img/loading.svg' id='loading' alt='Loading...' />";
     jsonStr = JSON.stringify({"provider": provider});
@@ -23,6 +27,55 @@ function addAccount(provider) {
     };
 }
 
+function displayAccountDetails(id) {
+    yammDB.select().from(accounts).where(accounts.id.eq(id)).exec().then(function(account) {
+        account = account[0]; // there should only be one account per primary key!
+
+        swal({
+            title: "Account Details",
+            type: "info",
+            customClass: "swal2-account-details",
+            // assumes all accounts are held in GBP
+            // TODO: fix this assumption!
+            html: `
+                <table>
+                    <tr>
+                        <th>Nickname</th>
+                        <td>${account.nickname} <a href="javascript:editAccountNickname('${account.id}')" style="font-size:small"><i class="fa fa-pencil" aria-hidden="true"></i> edit</a></td>
+                    </tr>
+                    <tr class="blank"></tr>
+                    <tr>
+                        <th>Balance</th>
+                        <td>£${(account.balance / 100).toFixed(2)}</td>
+                    </tr>
+                    <tr>
+                        <th>Funds Available</th>
+                        <td>£${(account.availableToSpend / 100).toFixed(2)}</td>
+                    </tr>
+                    <tr class="blank"></tr>
+                    <tr>
+                        <th>Account Number</th>
+                        <td>${account.accountNumber}</td>
+                    </tr>
+                    <tr>
+                        <th>Sort Code</th>
+                        <td>${account.sortCode}</td>
+                    </tr>
+                    <tr class="blank"></tr>
+                    <tr>
+                        <th>IBAN</th>
+                        <td>${account.iban}</td>
+                    </tr>
+                    <tr>
+                        <th>BIC</th>
+                        <td>${account.bic}</td>
+                    </tr>
+                </table>
+            `
+          });
+    });
+}
+
 function displayProviders() {
     var version;
 
@@ -32,7 +85,7 @@ function displayProviders() {
         xhr.open("GET", "http://127.0.0.1:" + sessionStorage.port + "/v1/about?auth=" + sessionStorage.secret, true);
         xhr.onload = function() {
             if (this.status == 200) {
-                version = JSON.parse(xhr.response).version
+                version = JSON.parse(xhr.response).version;
                 resolve();
             } else {
                 reject({
@@ -87,11 +140,9 @@ function displayProviders() {
             document.getElementById("main").innerHTML += "<div class='alert alert-danger'>No providers available for YAMM client version " + version + "!</div>";
         } else {
             document.getElementById("main").innerHTML += "<ul>";
-
             for (i in availableProviders) {
                 document.getElementById("main").innerHTML += "<li><a href=\"javascript:addAccount('" + availableProviders[i].slug +"')\">" + availableProviders[i].name + "</a></li>";
             }
-
             document.getElementById("main").innerHTML += "</ul>";
         }
     });
@@ -105,9 +156,6 @@ function launchApp() {
     console.log("https://beta.yamm.io/app/#port=" + sessionStorage.port + ",secret=" + sessionStorage.secret);
     console.log("https://yamm.io/app/#port=" + sessionStorage.port + ",secret=" + sessionStorage.secret);
 
-    var yammDB;
-    var accounts;
-    var transactions;
     var schemaBuilder = lf.schema.create("YAMM", 1);
 
     schemaBuilder.createTable("accounts").
@@ -293,11 +341,9 @@ function launchApp() {
     }).then(function(results) {
         console.log(results);
     }).then(function() {
+        return yammDB.select().from(accounts).exec();
+    }).then(function(accounts) {
         // show UI
-
-        // remove "loading" graphic
-        var loading = document.getElementById("loading");
-        loading.parentNode.removeChild(loading);
 
         // add menu items
         document.getElementById("navbar").innerHTML += `
@@ -311,6 +357,56 @@ function launchApp() {
                     </ul>
                 </li>
             </ul>
+        `;
+
+        // display summary data (left hand column)
+        // assumes all accounts are held in GBP
+        // TODO: fix this assumption! (by having one overview per currency)
+        var positives = 0;
+        var negatives = 0;
+        for (i in accounts) {
+            if (accounts[i].balance > 0) {
+                positives += accounts[i].balance;
+            } else {
+                negatives += accounts[i].balance;
+            }
+        }
+        var positivesStr = (positives / 100).toFixed(2);
+        var negativesStr = (negatives / -100).toFixed(2);
+        var balanceStr = ((positives + negatives) / 100).toFixed(2);
+        document.getElementById("main").innerHTML = `
+            <div class="col-lg-3">
+                <h2>Overview</h2>
+                <table style="width:100%">
+                    <tr class="text-success">
+                        <td>Positives</td>
+                        <td style="text-align:right">£${positivesStr}</td>
+                    </tr>
+                    <tr class="text-danger">
+                        <td>Negatives</td>
+                        <td style="text-align:right">-£${negativesStr}</td>
+                    </tr>
+                    <tr class="text-${positives + negatives >= 0 ? "success" : "danger"}" style="font-weight: bold">
+                        <td>Balance</td>
+                        <td style="text-align:right">£${balanceStr}</td>
+                    </tr>
+                </table>
+                <hr />
+                <h2>Accounts</h2>
+                ${accounts.map(account => `
+                    <h5>${account.nickname} <a href="javascript:displayAccountDetails('${account.id}')" style="font-size:small"><i class="fa fa-info-circle" aria-hidden="true"></i> details</a></h5>
+                    <table style="width:100%">
+                        <tr>
+                            <td>Balance</td>
+                            <td style="text-align:right">£${(account.balance / 100).toFixed(2)}</td>
+                        </tr>
+                        <tr>
+                            <td>Funds Available</td>
+                            <td style="text-align:right">£${(account.availableToSpend / 100).toFixed(2)}</td>
+                        </tr>
+                    </table>
+                `)}
+            </div>
         `;
 
         // TODO: display saved UI elements
@@ -335,7 +431,7 @@ function setPortAndSecret() {
         if (sessionStorage.port && sessionStorage.secret) { // if port and secret are now both set
             window.location.replace(url); // redirect to remove parameters
         } else {
-            alert("Port and secret not found! Please note that you cannot open YAMM in another tab or browser.")
+            document.getElementById("main").innerHTML = "<div class='alert alert-danger'>Port and secret not found! Please note that you cannot open YAMM in another tab or browser.</div>";
         }
     }
 }
