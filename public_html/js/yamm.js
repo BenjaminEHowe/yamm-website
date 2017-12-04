@@ -4,24 +4,21 @@ var transactions;
 
 function addAccount(provider) {
     document.getElementById("main").innerHTML = "<img src='/img/loading.svg' id='loading' alt='Loading...' />";
-    jsonStr = JSON.stringify({"provider": provider});
     var xhr = new XMLHttpRequest();
     xhr.open("POST", "http://127.0.0.1:" + sessionStorage.port + "/v1/account-requests?auth=" + sessionStorage.secret, true);
-    xhr.send(jsonStr);
+    xhr.send(JSON.stringify({"provider": provider}));
     xhr.onload = function() {
         if (this.status == 201) {
             console.log("Account added successfully!")
-            swal(
-                "Account added successfully!",
-                "",
-                "success"
-            );
+            swal({
+                title: "Account added successfully!",
+                type: "success"
+            });
         } else {
-            swal(
-                "Error",
-                xhr.statusText,
-                "error"
-            );
+            swal({
+                title: xhr.statusText,
+                type: "error"
+            });
         }
         displayProviders();
     };
@@ -148,7 +145,56 @@ function displayProviders() {
     });
 }
 
-function launchApp() {
+function editAccountNickname(id) {
+    yammDB.select().from(accounts).where(accounts.id.eq(id)).exec().then(function(account) {
+        account = account[0]; // there should only be one account per primary key!
+
+        swal({
+            title: "Update Account Nickname",
+            input: "text",
+            showCancelButton: true,
+            confirmButtonText: "Update",
+            showLoaderOnConfirm: true,
+            preConfirm: (nickname) => {
+                return new Promise(function(resolve, reject) {
+                    var xhr = new XMLHttpRequest();
+                    xhr.open("PATCH", `http://127.0.0.1:${sessionStorage.port}/v1/accounts/${account.id}?auth=${sessionStorage.secret}`, true);
+                    xhr.setRequestHeader('Content-type','application/json; charset=utf-8');
+                    xhr.onload = function() {
+                        if (this.status == 204) {
+                            resolve({
+                                status: this.status
+                            });
+                        } else {
+                            reject({
+                                status: this.status,
+                                statusText: xhr.statusText
+                            });
+                        }
+                    };
+                    xhr.onerror = function() {
+                        reject({
+                            status: this.status,
+                            statusText: xhr.statusText
+                        });
+                    };
+                    xhr.send(JSON.stringify({"nickname": nickname}));
+                  });
+            },
+            allowOutsideClick: false
+        }).then((result) => {
+            swal({
+                title: "Account Nickname Updated",
+                type: "success"
+            });
+        }).then(function() {
+            reset();
+            loadApp();
+        });
+    });
+}
+
+function loadApp() {
     console.log("YAMM client port: " + sessionStorage.port);
     console.log("YAMM client secret: " + sessionStorage.secret);
     console.log("https://local.yamm.io/app/#port=" + sessionStorage.port + ",secret=" + sessionStorage.secret);
@@ -347,7 +393,7 @@ function launchApp() {
 
         // add menu items
         document.getElementById("navbar").innerHTML += `
-            <ul class="navbar-nav navbar-right">
+            <ul class="navbar-nav navbar-right" id="navbar-app">
                 <li class="dropdown">
                     <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#"><i class="fa fa-plus" aria-hidden="true"></i> Add...</a>
                     <ul class="dropdown-menu">
@@ -375,7 +421,7 @@ function launchApp() {
         var negativesStr = (negatives / -100).toFixed(2);
         var balanceStr = ((positives + negatives) / 100).toFixed(2);
         document.getElementById("main").innerHTML = `
-            <div class="col-lg-3">
+            <div id="summary-column" class="col-lg-3">
                 <h2>Overview</h2>
                 <table style="width:100%">
                     <tr class="text-success">
@@ -393,24 +439,35 @@ function launchApp() {
                 </table>
                 <hr />
                 <h2>Accounts</h2>
-                ${accounts.map(account => `
-                    <h5>${account.nickname} <a href="javascript:displayAccountDetails('${account.id}')" style="font-size:small"><i class="fa fa-info-circle" aria-hidden="true"></i> details</a></h5>
-                    <table style="width:100%">
-                        <tr>
-                            <td>Balance</td>
-                            <td style="text-align:right">£${(account.balance / 100).toFixed(2)}</td>
-                        </tr>
-                        <tr>
-                            <td>Funds Available</td>
-                            <td style="text-align:right">£${(account.availableToSpend / 100).toFixed(2)}</td>
-                        </tr>
-                    </table>
-                `)}
-            </div>
-        `;
+            </div>`;
+        if (accounts.length !== 0) {
+            document.getElementById("summary-column").innerHTML += `${accounts.map(account => `
+                <h5>${account.nickname} <a href="javascript:displayAccountDetails('${account.id}')" style="font-size:small"><i class="fa fa-info-circle" aria-hidden="true"></i> details</a></h5>
+                <table style="width:100%">
+                    <tr>
+                        <td>Balance</td>
+                        <td style="text-align:right">£${(account.balance / 100).toFixed(2)}</td>
+                    </tr>
+                    <tr>
+                        <td>Funds Available</td>
+                        <td style="text-align:right">£${(account.availableToSpend / 100).toFixed(2)}</td>
+                    </tr>
+                </table>
+            `)}`;
+        } else {
+            document.getElementById("summary-column").innerHTML += "<p>You have not added any accounts to YAMM yet.</p>";
+        }
+        //document.getElementById("main").innerHTML += "</div>";
 
         // TODO: display saved UI elements
     });
+}
+
+function reset() {
+    var appNavbar = document.getElementById("navbar-app");
+    appNavbar.parentNode.removeChild(appNavbar);
+    document.getElementById("main").innerHTML = '<img src="/img/loading.svg" id="loading" alt="Loading..." />';
+    yammDB.close();
 }
 
 function setPortAndSecret() {
