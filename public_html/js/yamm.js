@@ -453,7 +453,7 @@ function loadApp() {
                         <td style="text-align:right">£${(account.availableToSpend / 100).toFixed(2)}</td>
                     </tr>
                 </table>
-            `)}`;
+            `).join("")}`;
         } else {
             document.getElementById("summary-column").innerHTML += "<p>You have not added any accounts to YAMM yet.</p>";
         }

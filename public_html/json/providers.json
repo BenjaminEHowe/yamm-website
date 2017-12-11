@@ -1,5 +1,10 @@
 [
   {
+    "name": "Aqua",
+    "slug": "NewDay_Aqua",
+    "minVersion": 0.1
+  },
+  {
     "name": "Starling Bank",
     "slug": "Starling",
     "minVersion": 0.1
