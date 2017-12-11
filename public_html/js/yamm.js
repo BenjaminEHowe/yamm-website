@@ -43,11 +43,11 @@ function displayAccountDetails(id) {
                     <tr class="blank"></tr>
                     <tr>
                         <th>Balance</th>
-                        <td>£${(account.balance / 100).toFixed(2)}</td>
+                        <td>${account.balance >= 0 ? "£" : "-£"}${(Math.abs(account.balance) / 100).toFixed(2)}</td>
                     </tr>
                     <tr>
                         <th>Funds Available</th>
-                        <td>£${(account.availableToSpend / 100).toFixed(2)}</td>
+                        <td>${account.availableToSpend >= 0 ? "£" : "-£"}${(Math.abs(account.availableToSpend) / 100).toFixed(2)}</td>
                     </tr>
                     <tr class="blank"></tr>
                     <tr>
@@ -446,11 +446,11 @@ function loadApp() {
                 <table style="width:100%">
                     <tr>
                         <td>Balance</td>
-                        <td style="text-align:right">£${(account.balance / 100).toFixed(2)}</td>
+                        <td style="text-align:right">${account.balance >= 0 ? "£" : "-£"}${(Math.abs(account.balance) / 100).toFixed(2)}</td>
                     </tr>
                     <tr>
                         <td>Funds Available</td>
-                        <td style="text-align:right">£${(account.availableToSpend / 100).toFixed(2)}</td>
+                        <td style="text-align:right">${account.availableToSpend >= 0 ? "£" : "-£"}${(Math.abs(account.availableToSpend) / 100).toFixed(2)}</td>
                     </tr>
                 </table>
             `).join("")}`;
