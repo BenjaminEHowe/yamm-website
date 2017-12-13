@@ -417,24 +417,22 @@ function loadApp() {
                 negatives += accounts[i].balance;
             }
         }
-        var positivesStr = (positives / 100).toFixed(2);
-        var negativesStr = (negatives / -100).toFixed(2);
-        var balanceStr = ((positives + negatives) / 100).toFixed(2);
+        var balance = positives + negatives;
         document.getElementById("main").innerHTML = `
             <div id="summary-column" class="col-lg-3">
                 <h2>Overview</h2>
                 <table style="width:100%">
                     <tr class="text-success">
                         <td>Positives</td>
-                        <td style="text-align:right">£${positivesStr}</td>
+                        <td style="text-align:right">£${(positives / 100).toFixed(2)}</td>
                     </tr>
                     <tr class="text-danger">
                         <td>Negatives</td>
-                        <td style="text-align:right">-£${negativesStr}</td>
+                        <td style="text-align:right">-£${(negatives / -100).toFixed(2)}</td>
                     </tr>
-                    <tr class="text-${positives + negatives >= 0 ? "success" : "danger"}" style="font-weight: bold">
+                    <tr class="text-${balance >= 0 ? "success" : "danger"}" style="font-weight: bold">
                         <td>Balance</td>
-                        <td style="text-align:right">£${balanceStr}</td>
+                        <td style="text-align:right">${balance >= 0 ? "£" : "-£"}${(Math.abs(balance) / 100).toFixed(2)}</td>
                     </tr>
                 </table>
                 <hr />
