@@ -1,12 +1,87 @@
 [
   {
+    "name": "Amazon Mastercard",
+    "slug": "NewDay_Amazon",
+    "minVersion": 0.1
+  },
+  {
     "name": "Aqua",
     "slug": "NewDay_Aqua",
     "minVersion": 0.1
   },
   {
+    "name": "Burton Mastercard",
+    "slug": "NewDay_Burton",
+    "minVersion": 0.1
+  },
+  {
+    "name": "Debenhams Credit Card",
+    "slug": "NewDay_Debenhams",
+    "minVersion": 0.1
+  },
+  {
+    "name": "Dorothy Perkins Mastercard",
+    "slug": "NewDay_DorothyPerkins",
+    "minVersion": 0.1
+  },
+  {
+    "name": "Evans Mastercard",
+    "slug": "NewDay_Evans",
+    "minVersion": 0.1
+  },
+  {
+    "name": "House of Fraser Recognition Mastercard",
+    "slug": "NewDay_HouseOfFraser",
+    "minVersion": 0.1
+  },
+  {
+    "name": "Laura Ashley",
+    "slug": "NewDay_LauraAshley",
+    "minVersion": 0.1
+  },
+  {
+    "name": "marbles",
+    "slug": "NewDay_Marbles",
+    "minVersion": 0.1
+  },
+  {
+    "name": "Miss Selfridge Account Card",
+    "slug": "NewDay_MissSelfridge",
+    "minVersion": 0.1
+  },
+  {
+    "name": "opus",
+    "slug": "NewDay_Opus",
+    "minVersion": 0.1
+  },
+  {
+    "name": "Outfit Mastercard",
+    "slug": "NewDay_Outfit",
+    "minVersion": 0.1
+  },
+  {
     "name": "Starling Bank",
     "slug": "Starling",
+    "minVersion": 0.1
+  },
+  {
+    "name": "Topman Card",
+    "slug": "NewDay_Topman",
+    "minVersion": 0.1
+  },
+  {
+    "name": "Topshop Card",
+    "slug": "NewDay_Topshop",
+    "minVersion": 0.1
+  },
+  {
+    "name": "TUI Credit Card",
+    "slug": "NewDay_TUI",
+    "minVersion": 0.1
+  },
+  {
+    "name": "Wallis Mastercard",
+    "slug": "NewDay_Wallis",
     "minVersion": 0.1
   }
 ]
