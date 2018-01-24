@@ -380,15 +380,8 @@ function loadApp() {
         return yammDB.insertOrReplace().into(transactions).values(transactionRows).exec();
     }).then(function() {
         return yammDB.select().from(accounts).exec();
-    }).then(function(results) {
-        console.log(results);
-    }).then(function() {
-        return yammDB.select().from(transactions).orderBy(transactions.created, lf.Order.DESC).exec();
-    }).then(function(results) {
-        console.log(results);
-    }).then(function() {
-        return yammDB.select().from(accounts).exec();
     }).then(function(accounts) {
+        console.log(accounts);
         // show UI
 
         // add menu items
@@ -419,24 +412,26 @@ function loadApp() {
         }
         var balance = positives + negatives;
         document.getElementById("main").innerHTML = `
-            <div id="summary-column" class="col-lg-3">
-                <h2>Overview</h2>
-                <table style="width:100%">
-                    <tr class="text-success">
-                        <td>Positives</td>
-                        <td style="text-align:right">£${(positives / 100).toFixed(2)}</td>
-                    </tr>
-                    <tr class="text-danger">
-                        <td>Negatives</td>
-                        <td style="text-align:right">-£${(negatives / -100).toFixed(2)}</td>
-                    </tr>
-                    <tr class="text-${balance >= 0 ? "success" : "danger"}" style="font-weight: bold">
-                        <td>Balance</td>
-                        <td style="text-align:right">${balance >= 0 ? "£" : "-£"}${(Math.abs(balance) / 100).toFixed(2)}</td>
-                    </tr>
-                </table>
-                <hr />
-                <h2>Accounts</h2>
+            <div class="row">
+                <div id="summary-column" class="col-lg-3">
+                    <h2>Overview</h2>
+                    <table style="width:100%">
+                        <tr class="text-success">
+                            <td>Positives</td>
+                            <td style="text-align:right">£${(positives / 100).toFixed(2)}</td>
+                        </tr>
+                        <tr class="text-danger">
+                            <td>Negatives</td>
+                            <td style="text-align:right">-£${(negatives / -100).toFixed(2)}</td>
+                        </tr>
+                        <tr class="text-${balance >= 0 ? "success" : "danger"}" style="font-weight: bold">
+                            <td>Balance</td>
+                            <td style="text-align:right">${balance >= 0 ? "£" : "-£"}${(Math.abs(balance) / 100).toFixed(2)}</td>
+                        </tr>
+                    </table>
+                    <hr />
+                    <h2>Accounts</h2>
+                </div>
             </div>`;
         if (accounts.length !== 0) {
             document.getElementById("summary-column").innerHTML += `${accounts.map(account => `
@@ -455,9 +450,146 @@ function loadApp() {
         } else {
             document.getElementById("summary-column").innerHTML += "<p>You have not added any accounts to YAMM yet.</p>";
         }
-        //document.getElementById("main").innerHTML += "</div>";
+    }).then(function() {
+        return yammDB.select().from(transactions).orderBy(transactions.created, lf.Order.DESC).exec();
+    }).then(function(transactions) {
+        console.log(transactions);
 
-        // TODO: display saved UI elements
+        document.getElementById("main").getElementsByTagName("div")[0].innerHTML += `
+            <div id="main-column" class="col-lg-9">
+                <h2>Transactions</h2>
+            </div>`;
+
+        if (transactions.length !== 0) {
+            document.getElementById("main-column").innerHTML += `
+                <table id="transactions" class="table table-hover">
+                    <thead class="thead-light">
+                        <tr>
+                            <th></th>
+                            <th>Date</th>
+                            <th colspan="2">Name</th>
+                            <th>Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>`;
+            var columns = ["type", "date", "icon", "name", "amount"];
+            var tableBody = document.getElementById("transactions").tBodies[0];
+            for (var i = 0; i < transactions.length; i++) {
+                var row = document.createElement("tr");
+                for (var j = 0; j < columns.length; j++) {
+                    var cell = document.createElement("td");
+
+                    var node;
+                    switch (columns[j]) {
+                        case "amount":
+                            var styles = "text-align:right;" // otherwise the table looks *very* messy
+                            var text = "£" + (Math.abs(transactions[i]["amount"]) / 100).toFixed(2); // TODO: don't assume all accounts are billed in £
+
+                            if (transactions[i]["amount"] > 0) { // if the transaction is a credit
+                                text = "+" + text;
+                                cell.setAttribute("class", "text-success");
+                            } else if (transactions[i]["amount"] < 0) { // if the transaction is a debit
+                                cell.setAttribute("class", "text-danger");
+                            }
+
+                            if (transactions[i]["localCurrency"].length != 0 && transactions[i]["localCurrency"] != "GBP") { // if the transaction is in a foreign currency
+                                // work out how many decimal places the currency has
+                                var localCurrencyFormatArray = (1).toLocaleString("en-GB", { style: "currency", currency: transactions[i]["localCurrency"] }).split(".");
+                                var decimalPlaces;
+                                if (localCurrencyFormatArray.length == 1) { // no decimal places
+                                    decimalPlaces = 0;
+                                } else { // some decimal places
+                                    decimalPlaces = localCurrencyFormatArray[1].length;
+                                }
+                                var foreignAmountDecimal = transactions[i]["localAmount"] / Math.pow(10, decimalPlaces);
+
+                                // display the foreign currency
+                                cell.setAttribute("data-toggle", "tooltip");
+                                cell.setAttribute("title", foreignAmountDecimal.toLocaleString("en-GB", { style: "currency", currency: transactions[i]["localCurrency"] }));
+                                styles += "text-decoration: underline; text-decoration-style: dotted;";
+                            }
+
+                            cell.setAttribute("style", styles);
+                            node = document.createTextNode(text);
+                            break;
+
+                        case "date":
+                            var text;
+                            var date = new Date(transactions[i]["created"]);
+                            if (date.toLocaleTimeString() == "00:00:00") { // the transaction occurred at *exactly* midnight so just show the date
+                                text = date.toLocaleDateString();
+                            } else {
+                                text = date.toLocaleString();
+                            }
+                            node = document.createTextNode(text);
+                            break;
+                        
+                        case "icon":
+                            if (transactions[i]["counterpartyIcon"].length != 0) { // if the transaction has an icon
+                                node = document.createElement("img");
+                                node.src = transactions[i]["counterpartyIcon"];
+                            } else {
+                                node = document.createTextNode("");
+                            }
+                            break;
+
+                        case "name":
+                            var text;
+                            if (transactions[i]["counterpartyName"].length != 0) {
+                                text = transactions[i]["counterpartyName"];
+                                if (transactions[i]["counterpartyName"] != transactions[i]["description"]) {
+                                    cell.setAttribute("data-toggle", "tooltip");
+                                    cell.setAttribute("title", transactions[i]["description"]);
+                                    cell.setAttribute("style", "text-decoration: underline; text-decoration-style: dotted;");
+                                }
+                            } else {
+                                text = transactions[i]["description"];
+                            }
+                            node = document.createTextNode(text);
+                            break;
+                        
+                        case "type":
+                            node = document.createElement("img");
+
+                            switch (transactions[i]["type"]) {
+                                case "BACS":
+                                    node.src = "../img/bacs.png";
+                                    break;
+                                
+                                case "CARD_CONTACTLESS":
+                                    node.src = "../img/contactless.png";
+                                    break;
+                                
+                                case "CARD_PIN":
+                                    node.src = "../img/chip-and-pin.png";
+                                    break;
+                                
+                                case "FASTER_PAYMENT":
+                                    node.src = "../img/faster-payments.png";
+                                    break;
+                                
+                                case "MOBILE_ANDROID":
+                                    node.src = "../img/android-pay.png";
+                                    break;
+                                
+                                default:
+                                    node = document.createTextNode("");
+                                    break;
+                            }
+
+                            break;
+                    }
+
+                    cell.appendChild(node);
+                    row.appendChild(cell);
+                }
+                tableBody.appendChild(row);
+            }
+        } else {
+            document.getElementById("main-column").innerHTML += "<p>You do not have any transactions loaded into YAMM yet.</p>";
+        }
     });
 }
 

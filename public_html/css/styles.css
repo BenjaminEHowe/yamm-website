@@ -48,6 +48,18 @@ p {
 	font-size: 16px;
 }
 
+table#transactions td, table#transactions th {
+	vertical-align: middle;
+}
+
+table#transactions th {
+	text-align: center;
+}
+
+table#transactions tr {
+	height: 75px;
+}
+
 tr.blank {
 	height: 10px;
 }
