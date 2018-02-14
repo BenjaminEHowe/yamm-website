@@ -8,18 +8,36 @@ function addAccount(provider) {
     xhr.open("POST", "http://127.0.0.1:" + sessionStorage.port + "/v1/account-requests?auth=" + sessionStorage.secret, true);
     xhr.send(JSON.stringify({"provider": provider}));
     xhr.onload = function() {
-        if (this.status == 201) {
-            console.log("Account added successfully!")
-            swal({
-                title: "Account added successfully!",
-                type: "success"
-            });
+        var alertMessage;
+        var alertType;
+        var responseJson = JSON.parse(xhr.response);
+
+        // set the message
+        if (responseJson.hasOwnProperty("message")) {
+            alertMessage = responseJson.message;
         } else {
-            swal({
-                title: xhr.statusText,
-                type: "error"
-            });
+            alertMessage = xhr.statusText;
         }
+
+        // log (if requried) to console
+        if (responseJson.hasOwnProperty("technical_message")) {
+            console.log(responseJson.technical_message);
+        }
+
+        // check the type
+        if (this.status < 400) {
+            alertType = "success";
+        } else {
+            alertType = "error";
+        }
+
+        // actually display the alert
+        swal({
+            title: alertMessage,
+            type: alertType
+        });
+        
+        // go back to the list of providers
         displayProviders();
     };
 }
