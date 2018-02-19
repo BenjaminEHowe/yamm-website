@@ -84,7 +84,7 @@
 					for (i in releases) {
 						if (releases[i].tag_name.indexOf("alpha") != -1) {
 							document.getElementById("latest-alpha").innerHTML = releases[i].tag_name;
-							document.getElementById("latest-alpha-age").innerHTML = moment(releases[i].created_at).fromNow();
+							document.getElementById("latest-alpha-age").innerHTML = moment(releases[i].published_at).fromNow();
 							document.getElementById("latest-alpha-jar").setAttribute("href", releases[i].assets[0].browser_download_url);
 							break;
 						}
