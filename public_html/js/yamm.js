@@ -182,22 +182,22 @@ function editAccountNickname(id) {
                         if (this.status == 204) {
                             resolve({
                                 status: this.status
-                            });
+                            })
                         } else {
                             reject({
                                 status: this.status,
                                 statusText: xhr.statusText
-                            });
+                            })
                         }
-                    };
+                    }
                     xhr.onerror = function() {
                         reject({
                             status: this.status,
                             statusText: xhr.statusText
-                        });
-                    };
+                        })
+                    }
                     xhr.send(JSON.stringify({"nickname": nickname}));
-                  });
+                  })
             },
             allowOutsideClick: false
         }).then((result) => {
