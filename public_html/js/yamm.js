@@ -92,12 +92,12 @@ function displayAccountDetails(id) {
 }
 
 function displayAccounts() {
-    yammDB.select().from(accounts).orderBy(accounts.nicknameLower, lf.Order.ASC).exec().then(function(accounts) {
-        console.log(accounts); // debug: dump accounts list to the console
+    yammDB.select().from(accounts).orderBy(accounts.nicknameLower).exec().then(function(accounts) {
+        console.log("Accounts: ", accounts); // debug: dump accounts list to the console
 
-        // display summary data
+        // display overview
         // assumes all accounts are held in GBP
-        // TODO: fix this assumption! (by having one overview per currency)
+        // TODO: fix this assumption!
         var positives = 0;
         var negatives = 0;
         for (i in accounts) {
@@ -108,30 +108,27 @@ function displayAccounts() {
             }
         }
         var balance = positives + negatives;
-        document.getElementById("main").innerHTML = `
-            <div class="row">
-                <div id="sidebar-column" class="col-lg-3">
-                    <h2>Overview</h2>
-                    <table style="width:100%">
-                        <tr class="text-success">
-                            <td>Positives</td>
-                            <td style="text-align:right">£${(positives / 100).toFixed(2)}</td>
-                        </tr>
-                        <tr class="text-danger">
-                            <td>Negatives</td>
-                            <td style="text-align:right">-£${(negatives / -100).toFixed(2)}</td>
-                        </tr>
-                        <tr class="text-${balance >= 0 ? "success" : "danger"}" style="font-weight: bold">
-                            <td>Balance</td>
-                            <td style="text-align:right">${balance >= 0 ? "£" : "-£"}${(Math.abs(balance) / 100).toFixed(2)}</td>
-                        </tr>
-                    </table>
-                    <hr />
-                    <h2>Accounts</h2>
-                </div>
-            </div>`;
+        document.getElementById("sidebar-overview").innerHTML = `
+            <h2>Overview</h2>
+            <table style="width:100%">
+                <tr class="text-success">
+                    <td>Positives</td>
+                    <td style="text-align:right">£${(positives / 100).toFixed(2)}</td>
+                </tr>
+                <tr class="text-danger">
+                    <td>Negatives</td>
+                    <td style="text-align:right">-£${(negatives / -100).toFixed(2)}</td>
+                </tr>
+                <tr class="text-${balance >= 0 ? "success" : "danger"}" style="font-weight: bold">
+                    <td>Balance</td>
+                    <td style="text-align:right">${balance >= 0 ? "£" : "-£"}${(Math.abs(balance) / 100).toFixed(2)}</td>
+                </tr>
+            </table>`;
+
+        // display accounts list
+        document.getElementById("sidebar-accounts").innerHTML += "<h2>Accounts</h2>";
         if (accounts.length !== 0) {
-            document.getElementById("sidebar-column").innerHTML += `${accounts.map(account => `
+            document.getElementById("sidebar-accounts").innerHTML += `${accounts.map(account => `
                 <h5>${account.nickname} <a href="javascript:displayAccountDetails('${account.id}')" style="font-size:small"><i class="fa fa-info-circle" aria-hidden="true"></i> details</a></h5>
                 <table style="width:100%">
                     <tr>
@@ -145,7 +142,7 @@ function displayAccounts() {
                 </table>
             `).join("")}`;
         } else {
-            document.getElementById("sidebar-column").innerHTML += "<p>You have not added any accounts to YAMM yet.</p>";
+            document.getElementById("sidebar-accounts").innerHTML += "<p>You have not added any accounts to YAMM yet.</p>";
         }
     });
 }
@@ -231,7 +228,7 @@ function displayProviders() {
 
 function displayTransactions() {
     yammDB.select().from(transactions).orderBy(transactions.created, lf.Order.DESC).exec().then(function(transactions) {
-        console.log(transactions);
+        console.log("Transactions: ", transactions); // debug: dump transactions to the console
 
         document.getElementById("main").getElementsByTagName("div")[0].innerHTML += `
             <div id="main-column" class="col-lg-9">
@@ -377,7 +374,36 @@ function displayTransactions() {
 }
 
 function displaySpend() {
-    console.log("Don't forget to implement spend... ;)");
+    yammDB
+	    .select(transactions.category.as("name"), lf.fn.sum(transactions.amount).as("amount"))
+        .from(transactions)
+        .where(transactions.created.gte(new Date(new Date().setDate(new Date().getDate() - 90))))
+        .groupBy(transactions.category)
+        .orderBy(transactions.category)
+	.exec().then(function(categories) {
+        console.log("Spend categories: ", categories); // debug: dump spend categories to the console
+
+        // write the bare spend widget
+        document.getElementById("sidebar-spend").innerHTML += `
+            <h2>Spend</h2>
+            <p style="margin-bottom:0.35rem">Over the last 90 days:</p>
+            <table style="width:100%">
+                <thead>
+                    <th>Category</th>
+                    <th style="text-align:right">Amount</th>
+                </thead>
+                <tbody id="sidebar-spend-body">
+                </tbody>
+            </table>`;
+
+        // populate the spend widget
+        document.getElementById("sidebar-spend-body").innerHTML += `${categories.map(category => `
+            <tr>
+                <td>${displayCategory(category.name)}</td>
+                <td style="text-align:right">${category.amount >= 0 ? "£" : "-£"}${(Math.abs(category.amount) / 100).toFixed(2)}</td>
+            </tr>
+        `).join("")}`;
+    });
 }
 
 function editAccountNickname(id) {
@@ -629,6 +655,18 @@ function loadApp() {
                 <li><a class="nav-link" href="/app/add-account"><i class="fa fa-plus" aria-hidden="true"></i> Add account</a></li>
             </ul>
         `;
+
+        // add sidebar and main section
+        document.getElementById("main").innerHTML = `
+            <div class="row">
+                <div id="sidebar-column" class="col-lg-3">
+                    <div id="sidebar-overview"></div>
+                    <hr />
+                    <div id="sidebar-accounts"></div>
+                    <hr />
+                    <div id="sidebar-spend"></div>
+                </div>
+            </div>`;
 
         displayAccounts(); // display accounts overview & list
         displayTransactions(); // display transactions
