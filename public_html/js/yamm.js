@@ -92,7 +92,7 @@ function displayAccountDetails(id) {
 }
 
 function displayAccounts() {
-    yammDB.select().from(accounts).exec().then(function(accounts) {
+    yammDB.select().from(accounts).orderBy(accounts.nicknameLower, lf.Order.ASC).exec().then(function(accounts) {
         console.log(accounts); // debug: dump accounts list to the console
 
         // display summary data
@@ -110,7 +110,7 @@ function displayAccounts() {
         var balance = positives + negatives;
         document.getElementById("main").innerHTML = `
             <div class="row">
-                <div id="summary-column" class="col-lg-3">
+                <div id="sidebar-column" class="col-lg-3">
                     <h2>Overview</h2>
                     <table style="width:100%">
                         <tr class="text-success">
@@ -131,7 +131,7 @@ function displayAccounts() {
                 </div>
             </div>`;
         if (accounts.length !== 0) {
-            document.getElementById("summary-column").innerHTML += `${accounts.map(account => `
+            document.getElementById("sidebar-column").innerHTML += `${accounts.map(account => `
                 <h5>${account.nickname} <a href="javascript:displayAccountDetails('${account.id}')" style="font-size:small"><i class="fa fa-info-circle" aria-hidden="true"></i> details</a></h5>
                 <table style="width:100%">
                     <tr>
@@ -145,9 +145,16 @@ function displayAccounts() {
                 </table>
             `).join("")}`;
         } else {
-            document.getElementById("summary-column").innerHTML += "<p>You have not added any accounts to YAMM yet.</p>";
+            document.getElementById("sidebar-column").innerHTML += "<p>You have not added any accounts to YAMM yet.</p>";
         }
     });
+}
+
+function displayCategory(text) {
+    text = text.replace("_", " ");
+    text = text.replace("AND", "&");
+    // below code from https://stackoverflow.com/a/5574446
+    return text.replace(/\w\S*/g, function(t){return t.charAt(0).toUpperCase() + t.substr(1).toLowerCase();});
 }
 
 function displayProviders() {
@@ -288,7 +295,7 @@ function displayTransactions() {
                             break;
                         
                         case "category":
-                            node = document.createTextNode(transactions[i]["category"]);
+                            node = document.createTextNode(displayCategory(transactions[i]["category"]));
                             break;
 
                         case "date":
@@ -448,6 +455,7 @@ function loadApp() {
         addColumn("currency", lf.Type.STRING).
         addColumn("iban", lf.Type.STRING).
         addColumn("nickname", lf.Type.STRING).
+        addColumn("nicknameLower", lf.Type.STRING).
         addColumn("sortCode", lf.Type.STRING).
         addPrimaryKey(["id"]);
     schemaBuilder.createTable("transactions").
@@ -522,6 +530,7 @@ function loadApp() {
                 "currency": accts[i].currency,
                 "iban": accts[i].iban || "",
                 "nickname": accts[i].nickname,
+                "nicknameLower": accts[i].nickname.toLowerCase(),
                 "sortCode": accts[i].sortCode || ""
             }));
         }

@@ -26,6 +26,10 @@ h1 {
 	text-align: center;
 }
 
+h5 {
+	margin-bottom: 0;
+}
+
 main {
 	padding-top: 20px;
 	flex: 1 0 auto;
@@ -79,6 +83,10 @@ tr.blank {
 
 .navbar {
 	display: block;
+}
+
+#sidebar-column table {
+	margin-bottom: 0.25rem;
 }
 
 .swal2-account-details {
