@@ -405,10 +405,18 @@ function displaySpend(days) {
         for (var category in categorySpend) {
             backgroundColour = categories[category].backgroundColour;
             textColour = categories[category].textColour;
+            formattedAmount = formatAmount(categorySpend[category], "GBP");
+            if (categorySpend[category] < 0) {
+                // if the spend is negative, i.e. a spend, remove the minus sign
+                formattedAmount = formattedAmount.slice(1);
+            } else if (categorySpend[category] > 0) {
+                // if the spend is positive, i.e. income, add a plus sign
+                formattedAmount = "+" + formattedAmount;
+            }
             document.getElementById("sidebar-spend-body").innerHTML += `
                 <tr style="background:#${backgroundColour}; color:#${textColour}">
                     <td>${categories[category].name}</td>
-                    <td style="text-align:right">${formatAmount(categorySpend[category], "GBP")}</td>
+                    <td style="text-align:right">${formattedAmount}</td>
                 </tr>
             `;
         }
