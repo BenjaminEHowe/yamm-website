@@ -221,15 +221,20 @@ function displayProviders() {
 }
 
 function displayTransactions() {
-    yammDB.select().from(transactions).orderBy(transactions.created, lf.Order.DESC).exec().then(function(transactions) {
-        console.log("Transactions: ", transactions); // debug: dump transactions to the console
+    yammDB
+        .select()
+        .from(accounts, transactions)
+        .where(accounts.id.eq(transactions.account))
+        .orderBy(transactions.created, lf.Order.DESC)
+    .exec().then(function(results) {
+        console.log("Transactions: ", results); // debug: dump transactions to the console
 
         document.getElementById("main").getElementsByTagName("div")[0].innerHTML += `
             <div id="main-column" class="col-lg-9">
                 <h2>Transactions</h2>
             </div>`;
 
-        if (transactions.length !== 0) {
+        if (results.length !== 0) {
             document.getElementById("main-column").innerHTML += `
                 <table id="transactions" class="table table-hover">
                     <thead class="thead-light">
@@ -246,7 +251,7 @@ function displayTransactions() {
                 </table>`;
             var columns = ["type", "date", "icon", "name", "category", "amount"];
             var tableBody = document.getElementById("transactions").tBodies[0];
-            for(var i = 0; i < transactions.length; i++) {
+            for(var i = 0; i < results.length; i++) {
                 var row = document.createElement("tr");
                 for(var j = 0; j < columns.length; j++) {
                     var cell = document.createElement("td");
@@ -255,29 +260,29 @@ function displayTransactions() {
                     switch (columns[j]) {
                         case "amount":
                             var styles = "text-align:right; white-space:nowrap;" // otherwise the table looks *very* messy
-                            var text = "£" + (Math.abs(transactions[i]["amount"]) / 100).toFixed(2); // TODO: don't assume all accounts are billed in GBP
+                            var text = formatAmount(results[i].transactions.amount, results[i].accounts.currency);
 
-                            if (transactions[i]["amount"] > 0) { // if the transaction is a credit
+                            if (results[i].transactions.amount > 0) { // if the transaction is a credit
                                 text = "+" + text;
                                 cell.setAttribute("class", "text-success");
-                            } else if (transactions[i]["amount"] < 0) { // if the transaction is a debit
+                            } else if (results[i].transactions.amount < 0) { // if the transaction is a debit
                                 cell.setAttribute("class", "text-danger");
                             }
 
-                            if (transactions[i]["localCurrency"].length != 0 && transactions[i]["localCurrency"] != "GBP") { // if the transaction is in a foreign currency
+                            if (results[i].transactions.localCurrency.length != 0 && results[i].transactions.localCurrency != "GBP") { // if the transaction is in a foreign currency
                                 // work out how many decimal places the currency has
-                                var localCurrencyFormatArray = (1).toLocaleString("en-GB", { style: "currency", currency: transactions[i]["localCurrency"] }).split(".");
+                                var localCurrencyFormatArray = (1).toLocaleString("en-GB", { style: "currency", currency: results[i].transactions.localCurrency }).split(".");
                                 var decimalPlaces;
                                 if (localCurrencyFormatArray.length == 1) { // no decimal places
                                     decimalPlaces = 0;
                                 } else { // some decimal places
                                     decimalPlaces = localCurrencyFormatArray[1].length;
                                 }
-                                var foreignAmountDecimal = transactions[i]["localAmount"] / Math.pow(10, decimalPlaces);
+                                var foreignAmountDecimal = results[i].transactions.localAmount / Math.pow(10, decimalPlaces);
 
                                 // display the foreign currency
                                 cell.setAttribute("data-toggle", "tooltip");
-                                cell.setAttribute("title", foreignAmountDecimal.toLocaleString("en-GB", { style: "currency", currency: transactions[i]["localCurrency"] }));
+                                cell.setAttribute("title", foreignAmountDecimal.toLocaleString("en-GB", { style: "currency", currency: results[i].transactions.localCurrency }));
                                 styles += "text-decoration: underline; text-decoration-style: dotted;";
                             }
 
@@ -286,15 +291,15 @@ function displayTransactions() {
                             break;
                         
                         case "category":
-                            node = document.createTextNode(categories[transactions[i]["category"]].name);
-                            backgroundColour = categories[transactions[i]["category"]].backgroundColour;
-                            textColour = categories[transactions[i]["category"]].textColour;
+                            node = document.createTextNode(categories[results[i].transactions.category].name);
+                            backgroundColour = categories[results[i].transactions.category].backgroundColour;
+                            textColour = categories[results[i].transactions.category].textColour;
                             cell.setAttribute("style", "background:#" + backgroundColour + "; color:#" + textColour + "; text-align: center");
                             break;
 
                         case "date":
                             var text;
-                            var date = new Date(transactions[i]["created"]);
+                            var date = new Date(results[i].transactions.created);
                             if (date.toLocaleTimeString() == "00:00:00") { // the transaction occurred at *exactly* midnight so just show the date
                                 text = date.toLocaleDateString();
                             } else {
@@ -304,9 +309,9 @@ function displayTransactions() {
                             break;
                         
                         case "icon":
-                            if (transactions[i]["counterpartyIcon"].length != 0) { // if the transaction has an icon
+                            if (results[i].transactions.counterpartyIcon.length != 0) { // if the transaction has an icon
                                 node = document.createElement("img");
-                                node.src = transactions[i]["counterpartyIcon"];
+                                node.src = results[i].transactions.counterpartyIcon;
                             } else {
                                 node = document.createTextNode("");
                             }
@@ -314,15 +319,15 @@ function displayTransactions() {
 
                         case "name":
                             var text;
-                            if (transactions[i]["counterpartyName"].length != 0) {
-                                text = transactions[i]["counterpartyName"];
-                                if (transactions[i]["counterpartyName"] != transactions[i]["description"]) {
+                            if (results[i].transactions.counterpartyName.length != 0) {
+                                text = results[i].transactions.counterpartyName;
+                                if (results[i].transactions.counterpartyName != results[i].transactions.description) {
                                     cell.setAttribute("data-toggle", "tooltip");
-                                    cell.setAttribute("title", transactions[i]["description"]);
+                                    cell.setAttribute("title", results[i].transactions.description);
                                     cell.setAttribute("style", "text-decoration: underline; text-decoration-style: dotted;");
                                 }
                             } else {
-                                text = transactions[i]["description"];
+                                text = results[i].transactions.description;
                             }
                             node = document.createTextNode(text);
                             break;
@@ -330,7 +335,7 @@ function displayTransactions() {
                         case "type":
                             node = document.createElement("img");
 
-                            switch (transactions[i]["type"]) {
+                            switch (results[i].transactions.type) {
                                 case "BACS":
                                     node.src = "../img/bacs.png";
                                     break;
@@ -370,7 +375,7 @@ function displayTransactions() {
     });
 }
 
-function displaySpend() {
+function displaySpend(days) {
     // TODO: fix the fact that this breaks for transactions which aren't in GBP
     var categorySpend = {};
     for(var category in categories) {
@@ -382,7 +387,7 @@ function displaySpend() {
     yammDB
 	    .select(transactions.category.as("category"), lf.fn.sum(transactions.amount).as("amount"))
         .from(transactions)
-        .where(transactions.created.gte(new Date(new Date().setDate(new Date().getDate() - 90))))
+        .where(transactions.created.gte(new Date(new Date().setDate(new Date().getDate() - days))))
         .groupBy(transactions.category)
 	.exec().then(function(categoriesWithSpend) {
         console.log("Spend categories: ", categoriesWithSpend); // debug: dump categories with spend to the console
@@ -393,9 +398,9 @@ function displaySpend() {
         }
 
         // write the bare spend widget
-        document.getElementById("sidebar-spend").innerHTML += `
-            <h2>Spend</h2>
-            <p style="margin-bottom:0.5rem">Over the last 90 days:</p>
+        document.getElementById("sidebar-spend").innerHTML = `
+            <h2>Spending</h2>
+            <p style="margin-bottom:0.5rem">Over the last ${days} days:</p>
             <table style="width:100%" class="table">
                 <thead class="thead-light">
                     <th>Category</th>
@@ -746,7 +751,7 @@ function loadApp() {
         }).then(function(json) {
             categories = json;
             displayTransactions(); // display transactions
-            displaySpend(); // display spend categories
+            displaySpend(90); // display spend categories
         });
     });
 }
