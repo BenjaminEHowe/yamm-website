@@ -1,6 +1,7 @@
-var yammDB;
 var accounts;
+var categories;
 var transactions;
+var yammDB;
 
 function addAccount(provider) {
     document.getElementById("main").innerHTML = "<img src='/img/loading.svg' id='loading' alt='Loading...' />";
@@ -61,11 +62,11 @@ function displayAccountDetails(id) {
                     <tr class="blank"></tr>
                     <tr>
                         <th>Balance</th>
-                        <td>${account.balance >= 0 ? "£" : "-£"}${(Math.abs(account.balance) / 100).toFixed(2)}</td>
+                        <td>${formatAmount(account.balance, account.currency)}</td>
                     </tr>
                     <tr>
                         <th>Funds Available</th>
-                        <td>${account.availableToSpend >= 0 ? "£" : "-£"}${(Math.abs(account.availableToSpend) / 100).toFixed(2)}</td>
+                        <td>${formatAmount(account.availableToSpend, account.currency)}</td>
                     </tr>
                     <tr class="blank"></tr>
                     <tr>
@@ -95,12 +96,12 @@ function displayAccounts() {
     yammDB.select().from(accounts).orderBy(accounts.nicknameLower).exec().then(function(accounts) {
         console.log("Accounts: ", accounts); // debug: dump accounts list to the console
 
-        // display overview
-        // assumes all accounts are held in GBP
-        // TODO: fix this assumption!
+        // TODO: fix the assumption that all accounts are held in GBP
+        // this probably requires talking to people who have accounts in multiple currencies
+        // to find out how they mentally manage their money...
         var positives = 0;
         var negatives = 0;
-        for (i in accounts) {
+        for(var i in accounts) {
             if (accounts[i].balance > 0) {
                 positives += accounts[i].balance;
             } else {
@@ -113,15 +114,15 @@ function displayAccounts() {
             <table style="width:100%">
                 <tr class="text-success">
                     <td>Positives</td>
-                    <td style="text-align:right">£${(positives / 100).toFixed(2)}</td>
+                    <td style="text-align:right">${formatAmount(positives, "GBP")}</td>
                 </tr>
                 <tr class="text-danger">
                     <td>Negatives</td>
-                    <td style="text-align:right">-£${(negatives / -100).toFixed(2)}</td>
+                    <td style="text-align:right">${formatAmount(negatives, "GBP")}</td>
                 </tr>
                 <tr class="text-${balance >= 0 ? "success" : "danger"}" style="font-weight: bold">
                     <td>Balance</td>
-                    <td style="text-align:right">${balance >= 0 ? "£" : "-£"}${(Math.abs(balance) / 100).toFixed(2)}</td>
+                    <td style="text-align:right">${formatAmount(balance, "GBP")}</td>
                 </tr>
             </table>`;
 
@@ -133,11 +134,11 @@ function displayAccounts() {
                 <table style="width:100%">
                     <tr>
                         <td>Balance</td>
-                        <td style="text-align:right">${account.balance >= 0 ? "£" : "-£"}${(Math.abs(account.balance) / 100).toFixed(2)}</td>
+                        <td style="text-align:right">${formatAmount(account.balance, account.currency)}</td>
                     </tr>
                     <tr>
                         <td>Funds Available</td>
-                        <td style="text-align:right">${account.availableToSpend >= 0 ? "£" : "-£"}${(Math.abs(account.availableToSpend) / 100).toFixed(2)}</td>
+                        <td style="text-align:right">${formatAmount(account.availableToSpend, account.currency)}</td>
                     </tr>
                 </table>
             `).join("")}`;
@@ -145,13 +146,6 @@ function displayAccounts() {
             document.getElementById("sidebar-accounts").innerHTML += "<p>You have not added any accounts to YAMM yet.</p>";
         }
     });
-}
-
-function displayCategory(text) {
-    text = text.replace("_", " ");
-    text = text.replace("AND", "&");
-    // below code from https://stackoverflow.com/a/5574446
-    return text.replace(/\w\S*/g, function(t){return t.charAt(0).toUpperCase() + t.substr(1).toLowerCase();});
 }
 
 function displayProviders() {
@@ -206,7 +200,7 @@ function displayProviders() {
     }).then(function(providers) {
         var availableProviders = [];
 
-        for (i in providers) {
+        for(i in providers) {
             if (providers[i].minVersion <= version) {
                 availableProviders.push(providers[i]);
             }
@@ -218,7 +212,7 @@ function displayProviders() {
             document.getElementById("main").innerHTML += "<div class='alert alert-danger'>No providers available for YAMM client version " + version + "!</div>";
         } else {
             document.getElementById("main").innerHTML += "<ul>";
-            for (i in availableProviders) {
+            for(i in availableProviders) {
                 document.getElementById("main").innerHTML += "<li><a href=\"javascript:addAccount('" + availableProviders[i].slug +"')\">" + availableProviders[i].name + "</a></li>";
             }
             document.getElementById("main").innerHTML += "</ul>";
@@ -252,16 +246,16 @@ function displayTransactions() {
                 </table>`;
             var columns = ["type", "date", "icon", "name", "category", "amount"];
             var tableBody = document.getElementById("transactions").tBodies[0];
-            for (var i = 0; i < transactions.length; i++) {
+            for(var i = 0; i < transactions.length; i++) {
                 var row = document.createElement("tr");
-                for (var j = 0; j < columns.length; j++) {
+                for(var j = 0; j < columns.length; j++) {
                     var cell = document.createElement("td");
 
                     var node;
                     switch (columns[j]) {
                         case "amount":
-                            var styles = "text-align:right;" // otherwise the table looks *very* messy
-                            var text = "£" + (Math.abs(transactions[i]["amount"]) / 100).toFixed(2); // TODO: don't assume all accounts are billed in £
+                            var styles = "text-align:right; white-space:nowrap;" // otherwise the table looks *very* messy
+                            var text = "£" + (Math.abs(transactions[i]["amount"]) / 100).toFixed(2); // TODO: don't assume all accounts are billed in GBP
 
                             if (transactions[i]["amount"] > 0) { // if the transaction is a credit
                                 text = "+" + text;
@@ -292,7 +286,10 @@ function displayTransactions() {
                             break;
                         
                         case "category":
-                            node = document.createTextNode(displayCategory(transactions[i]["category"]));
+                            node = document.createTextNode(categories[transactions[i]["category"]].name);
+                            backgroundColour = categories[transactions[i]["category"]].backgroundColour;
+                            textColour = categories[transactions[i]["category"]].textColour;
+                            cell.setAttribute("style", "background:#" + backgroundColour + "; color:#" + textColour + "; text-align: center");
                             break;
 
                         case "date":
@@ -374,35 +371,86 @@ function displayTransactions() {
 }
 
 function displaySpend() {
+    // TODO: fix the fact that this breaks for transactions which aren't in GBP
+    var categorySpend = {};
+    for(var category in categories) {
+        if (categories[category].includeInSpending) {
+            categorySpend[category] = 0;
+        }
+    }
+
     yammDB
-	    .select(transactions.category.as("name"), lf.fn.sum(transactions.amount).as("amount"))
+	    .select(transactions.category.as("category"), lf.fn.sum(transactions.amount).as("amount"))
         .from(transactions)
         .where(transactions.created.gte(new Date(new Date().setDate(new Date().getDate() - 90))))
         .groupBy(transactions.category)
-        .orderBy(transactions.category)
-	.exec().then(function(categories) {
-        console.log("Spend categories: ", categories); // debug: dump spend categories to the console
+	.exec().then(function(categoriesWithSpend) {
+        console.log("Spend categories: ", categoriesWithSpend); // debug: dump categories with spend to the console
+
+        // update the category spend
+        for(var i = 0; i < categoriesWithSpend.length; i++) {
+            categorySpend[categoriesWithSpend[i].category] = categoriesWithSpend[i].amount;
+        }
 
         // write the bare spend widget
         document.getElementById("sidebar-spend").innerHTML += `
             <h2>Spend</h2>
-            <p style="margin-bottom:0.35rem">Over the last 90 days:</p>
-            <table style="width:100%">
-                <thead>
+            <p style="margin-bottom:0.5rem">Over the last 90 days:</p>
+            <table style="width:100%" class="table">
+                <thead class="thead-light">
                     <th>Category</th>
                     <th style="text-align:right">Amount</th>
                 </thead>
                 <tbody id="sidebar-spend-body">
                 </tbody>
-            </table>`;
+            </table>
+            <div id="sidebar-spend-chart" style="margin-top:0.75rem"></div>`;
 
         // populate the spend widget
-        document.getElementById("sidebar-spend-body").innerHTML += `${categories.map(category => `
-            <tr>
-                <td>${displayCategory(category.name)}</td>
-                <td style="text-align:right">${category.amount >= 0 ? "£" : "-£"}${(Math.abs(category.amount) / 100).toFixed(2)}</td>
-            </tr>
-        `).join("")}`;
+        for (var category in categorySpend) {
+            backgroundColour = categories[category].backgroundColour;
+            textColour = categories[category].textColour;
+            document.getElementById("sidebar-spend-body").innerHTML += `
+                <tr style="background:#${backgroundColour}; color:#${textColour}">
+                    <td>${categories[category].name}</td>
+                    <td style="text-align:right">${formatAmount(categorySpend[category], "GBP")}</td>
+                </tr>
+            `;
+        }
+
+        // define how to create the spend chart
+        createChart = function() {
+            var data = new google.visualization.DataTable();
+            data.addColumn("string", "Category");
+            data.addColumn("number", "Amount");
+            data.addColumn({"role": "style", "type": "string"});
+            for (var category in categorySpend) {
+                data.addRow([
+                    categories[category].name,
+                    {"v": categorySpend[category], "f": formatAmount(categorySpend[category], "GBP")},
+                    "color:" + categories[category].backgroundColour + "; stroke-color:#000"
+                ]);
+            }
+            return data;
+        }
+        
+        // define how to draw the spend chart
+        drawChart = function(data) {
+            var options = {
+                "chartArea": {"height": "100%", "width": "100%"},
+            };
+            //var chart = new google.visualization.BarChart(document.getElementById("sidebar-spend-chart"));
+            var chart = new google.visualization.ColumnChart(document.getElementById("sidebar-spend-chart"));
+            chart.draw(data, options);
+        }
+        
+        // draw the chart, or queue the drawing of the chart
+        chart = {"create": createChart, "data": null, "draw": drawChart};
+        if (googleChartsLoaded) {
+            chart.data = chart.create();
+            chart.draw(chart.data);
+        }
+        charts.push(chart);
     });
 }
 
@@ -410,7 +458,6 @@ function editAccountNickname(id) {
     console.log("Editing account nickname for account " + id);
     yammDB.select().from(accounts).where(accounts.id.eq(id)).exec().then(function(account) {
         account = account[0]; // there should only be one account per primary key!
-        console.log("Successfully selected account from Lovefield DB");
 
         swal({
             title: "Update Account Nickname",
@@ -420,12 +467,10 @@ function editAccountNickname(id) {
             showLoaderOnConfirm: true,
             preConfirm: (nickname) => {
                 return new Promise(function(resolve, reject) {
-                    console.log("Successfully launched preConfirm promise");
                     var xhr = new XMLHttpRequest();
                     xhr.open("PATCH", `http://127.0.0.1:${sessionStorage.port}/v1/accounts/${account.id}?auth=${sessionStorage.secret}`);
                     xhr.setRequestHeader('Content-type','application/json; charset=utf-8');
                     xhr.onload = function() {
-                        console.log("XHR loaded");
                         if (this.status == 204) {
                             resolve({
                                 status: this.status
@@ -438,14 +483,12 @@ function editAccountNickname(id) {
                         }
                     }
                     xhr.onerror = function() {
-                        console.log("XHR error, status " + this.status)
                         reject({
                             status: this.status,
                             statusText: xhr.statusText
                         })
                     }
                     xhr.send(JSON.stringify({"nickname": nickname}));
-                    console.log("XHR sent");
                 })
             },
             allowOutsideClick: false
@@ -459,6 +502,23 @@ function editAccountNickname(id) {
             loadApp();
         });
     });
+}
+
+function formatAmount(amount, currency) {
+    // amount: the amount in minor units
+    // currency: the ISO 4217 3 character currency code
+
+    // work out how many decimal places the currency has
+    var localCurrencyFormatArray = (1).toLocaleString("en-GB", { "style": "currency", "currency": currency }).split(".");
+    var decimalPlaces;
+    if (localCurrencyFormatArray.length == 1) { // no decimal places
+        decimalPlaces = 0;
+    } else { // some decimal places
+        decimalPlaces = localCurrencyFormatArray[1].length;
+    }
+    var foreignAmountDecimal = amount / Math.pow(10, decimalPlaces);
+
+    return foreignAmountDecimal.toLocaleString("en-GB", { "style": "currency", "currency": currency });
 }
 
 function loadApp() {
@@ -513,7 +573,7 @@ function loadApp() {
         addColumn("type", lf.Type.STRING).
         addNullable(["localAmount", "settled"]).
         addPrimaryKey(["id"]);
-    
+
     schemaBuilder.connect({storeType: lf.schema.DataStoreType.MEMORY}).then(function(db) {
         // connect to the newly specified database
         yammDB = db;
@@ -546,7 +606,7 @@ function loadApp() {
     }).then(function(accts) {
         // insert the data into the accounts table
         var accountRows = [];
-        for (i in accts) {
+        for(i in accts) {
             accountRows.push(accounts.createRow({
                 "id": accts[i].id,
                 "accountNumber": accts[i].accountNumber || "",
@@ -588,7 +648,7 @@ function loadApp() {
     }).then(function(txns) {
         // insert the data into the transactions table
         var transactionRows = [];
-        for (i in txns) {
+        for(i in txns) {
             var transaction = {};
             transaction.id = txns[i].id;
             transaction.account = txns[i].account;
@@ -669,8 +729,25 @@ function loadApp() {
             </div>`;
 
         displayAccounts(); // display accounts overview & list
-        displayTransactions(); // display transactions
-        displaySpend(); // display spend categories
+
+        // fetch the list of categories, parse as JSON, display transactions and spend
+        fetch("/json/categories.json").then(function (response) {
+            // handle potential errors
+            if (response.status !== 200) {
+                swal({
+                    "title": "Error while fetching categories",
+                    "text": "HTTP " + response.status + " (" + response.statusText + ")",
+                    "type": "error",
+                });
+                return;
+            }
+
+            return response.json();
+        }).then(function(json) {
+            categories = json;
+            displayTransactions(); // display transactions
+            displaySpend(); // display spend categories
+        });
     });
 }
 
@@ -688,7 +765,7 @@ function setPortAndSecret() {
             window.location.replace(url); // redirect to remove parameters        
         }
     } else {
-        for (i in params) {
+        for(i in params) {
             var param = params[i].split("=");
             if (param[0] == "port") {
                 sessionStorage.port = param[1];

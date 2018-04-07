@@ -1,0 +1,92 @@
+{
+	"BILLS_AND_HOME": {
+		"backgroundColour": "0082c8",
+		"includeInSpending": true,
+		"name": "Bills & Home",
+		"textColour": "ffffff"
+	},
+	"CHARITY": {
+		"backgroundColour": "ffe119",
+		"includeInSpending": true,
+		"name": "Charity",
+		"textColour": "000000"
+	},
+	"CLOTHES": {
+		"backgroundColour": "911eb4",
+		"includeInSpending": true,
+		"name": "Clothes",
+		"textColour": "ffffff"
+	},
+	"EATING_OUT": {
+		"backgroundColour": "800000",
+		"includeInSpending": true,
+		"name": "Eating Out",
+		"textColour": "ffffff"
+	},
+	"ENTERTAINMENT": {
+		"backgroundColour": "f58231",
+		"includeInSpending": true,
+		"name": "Entertainment",
+		"textColour": "ffffff"
+	},
+	"GENERAL": {
+		"backgroundColour": "ffffff",
+		"includeInSpending": true,
+		"name": "General",
+		"textColour": "000000"
+	},
+	"GROCERIES": {
+		"backgroundColour": "d2f53c",
+		"includeInSpending": true,
+		"name": "Groceries",
+		"textColour": "000000"
+	},
+	"HEALTH_AND_BEAUTY": {
+		"backgroundColour": "e6beff",
+		"includeInSpending": true,
+		"name": "Health & Beauty",
+		"textColour": "000000"
+	},
+	"INCOME": {
+		"backgroundColour": "3cb44b",
+		"includeInSpending": false,
+		"name": "Income",
+		"textColour": "ffffff"
+	},
+	"INTEREST_AND_CHARGES": {
+		"backgroundColour": "aaffc3",
+		"includeInSpending": true,
+		"name": "Interest & Charges",
+		"textColour": "000000"
+	},
+	"INTERNAL_TRANSFER": {
+		"backgroundColour": "000000",
+		"includeInSpending": false,
+		"name": "Internal Transfer",
+		"textColour": "ffffff"
+	},
+	"PETS": {
+		"backgroundColour": "008080",
+		"includeInSpending": true,
+		"name": "Pets",
+		"textColour": "ffffff"
+	},
+	"SHOPPING": {
+		"backgroundColour": "fabebe",
+		"includeInSpending": true,
+		"name": "Shopping",
+		"textColour": "000000"
+	},
+	"TRANSPORT": {
+		"backgroundColour": "000080",
+		"includeInSpending": true,
+		"name": "Transport",
+		"textColour": "ffffff"
+	},
+	"UNKNOWN": {
+		"backgroundColour": "808080",
+		"includeInSpending": true,
+		"name": "Unknown",
+		"textColour": "000000"
+	}
+}

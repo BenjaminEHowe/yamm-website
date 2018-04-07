@@ -73,6 +73,34 @@
 
 		<!-- lovefield -->
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/lovefield/2.1.12/lovefield.min.js" integrity="sha256-KdkVpfh8VqPrkAwqFE65gcjtp0ML1ivT3TIZ9DXnNhc=" crossorigin="anonymous"></script>
+
+		<!-- Google Charts -->
+		<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+		<script type="text/javascript">
+			var charts = [];
+			var googleChartsLoaded = false;
+
+			function createCharts() {
+				googleChartsLoaded = true;
+				// call each "create chart" function
+				for (var i = 0; i < charts.length; i++) {
+					charts[i].data = charts[i].create();
+				}
+				// draw all the charts
+				drawCharts();
+			}
+
+			function drawCharts() {
+				// call each "draw chart" function
+				for (var i = 0; i < charts.length; i++) {
+					charts[i].draw(charts[i].data);
+				}
+			}
+			
+			google.charts.load('current', {packages: ['corechart', 'bar']});
+			google.charts.setOnLoadCallback(createCharts);
+			window.onresize = drawCharts;
+		</script>
 		
 		<!-- YAMM JS -->
 		<script src="/js/yamm.js"></script>

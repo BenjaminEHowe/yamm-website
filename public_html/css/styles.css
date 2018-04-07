@@ -22,8 +22,16 @@ a.disabled {
 	cursor: not-allowed;
 }
 
+hr {
+	margin: 0.75rem auto 0.5rem;
+}
+
 h1 { 
 	text-align: center;
+}
+
+h2 {
+	font-size: 1.85rem;
 }
 
 h5 {
@@ -60,7 +68,7 @@ table#transactions th {
 	text-align: center;
 }
 
-table#transactions tr {
+table#transactions td {
 	height: 75px;
 }
 
@@ -85,8 +93,17 @@ tr.blank {
 	display: block;
 }
 
+#sidebar-column h2 {
+	margin-bottom: 0.25rem;
+}
+
 #sidebar-column table {
 	margin-bottom: 0.35rem;
+}
+
+#sidebar-spend table th,
+#sidebar-spend table td {
+	padding: 0.5rem 0.75rem;
 }
 
 .swal2-account-details {
