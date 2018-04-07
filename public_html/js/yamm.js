@@ -266,23 +266,13 @@ function displayTransactions() {
                                 text = "+" + text;
                                 cell.setAttribute("class", "text-success");
                             } else if (results[i].transactions.amount < 0) { // if the transaction is a debit
+                                text = text.slice(1); // remove the minus sign
                                 cell.setAttribute("class", "text-danger");
                             }
 
-                            if (results[i].transactions.localCurrency.length != 0 && results[i].transactions.localCurrency != "GBP") { // if the transaction is in a foreign currency
-                                // work out how many decimal places the currency has
-                                var localCurrencyFormatArray = (1).toLocaleString("en-GB", { style: "currency", currency: results[i].transactions.localCurrency }).split(".");
-                                var decimalPlaces;
-                                if (localCurrencyFormatArray.length == 1) { // no decimal places
-                                    decimalPlaces = 0;
-                                } else { // some decimal places
-                                    decimalPlaces = localCurrencyFormatArray[1].length;
-                                }
-                                var foreignAmountDecimal = results[i].transactions.localAmount / Math.pow(10, decimalPlaces);
-
-                                // display the foreign currency
+                            if (results[i].transactions.localCurrency.length != 0 && results[i].transactions.localCurrency != results[i].accounts.currency) { // if the transaction is in a foreign currency
                                 cell.setAttribute("data-toggle", "tooltip");
-                                cell.setAttribute("title", foreignAmountDecimal.toLocaleString("en-GB", { style: "currency", currency: results[i].transactions.localCurrency }));
+                                cell.setAttribute("title", formatAmount(results[i].transactions.localAmount, results[i].transactions.localCurrency));
                                 styles += "text-decoration: underline; text-decoration-style: dotted;";
                             }
 
