@@ -47,47 +47,58 @@ function displayAccountDetails(id) {
     yammDB.select().from(accounts).where(accounts.id.eq(id)).exec().then(function(account) {
         account = account[0]; // there should only be one account per primary key!
 
+        var html = `
+            <table>
+                <tr>
+                    <th>Nickname</th>
+                    <td>${account.nickname} <a href="javascript:editAccountNickname('${account.id}')" style="font-size:small"><i class="fa fa-pencil" aria-hidden="true"></i> edit</a></td>
+                </tr>
+                <tr class="blank"></tr>
+                <tr>
+                    <th>Balance</th>
+                    <td>${formatAmount(account.balance, account.currency)}</td>
+                </tr>
+                <tr>
+                    <th>Funds Available</th>
+                    <td>${formatAmount(account.availableToSpend, account.currency)}</td>
+                </tr>
+                ${typeof account.accountNumber != "undefined" || typeof account.sortCode != "undefined" ? `
+                    <tr class="blank"></tr>
+                    ${typeof account.accountNumber != "undefined" ? `
+                        <tr>
+                            <th>Account Number</th>
+                            <td>${account.accountNumber}</td>
+                        </tr>
+                    ` : ``}
+                    ${typeof account.sortCode != "undefined" ? `
+                        <tr>
+                            <th>Sort Code</th>
+                            <td>${account.sortCode}</td>
+                        </tr>
+                    ` : ``}
+                ` : ``}
+                ${typeof account.iban != "undefined" || typeof account.bic != "undefined" ? `
+                    <tr class="blank"></tr>
+                    ${typeof account.iban != "undefined" ? `
+                        <tr>
+                            <th>IBAN</th>
+                            <td>${account.iban}</td>
+                        </tr>
+                    ` : ``}
+                    ${typeof account.bic != "undefined" ? `
+                        <tr>
+                            <th>BIC</th>
+                            <td>${account.bic}</td>
+                        </tr>
+                    ` : ``}
+                ` : ``}
+            </table>`;
+
         swal({
-            title: "Account Details",
-            type: "info",
-            customClass: "swal2-account-details",
-            // assumes all accounts are held in GBP
-            // TODO: fix this assumption!
-            html: `
-                <table>
-                    <tr>
-                        <th>Nickname</th>
-                        <td>${account.nickname} <a href="javascript:editAccountNickname('${account.id}')" style="font-size:small"><i class="fa fa-pencil" aria-hidden="true"></i> edit</a></td>
-                    </tr>
-                    <tr class="blank"></tr>
-                    <tr>
-                        <th>Balance</th>
-                        <td>${formatAmount(account.balance, account.currency)}</td>
-                    </tr>
-                    <tr>
-                        <th>Funds Available</th>
-                        <td>${formatAmount(account.availableToSpend, account.currency)}</td>
-                    </tr>
-                    <tr class="blank"></tr>
-                    <tr>
-                        <th>Account Number</th>
-                        <td>${account.accountNumber}</td>
-                    </tr>
-                    <tr>
-                        <th>Sort Code</th>
-                        <td>${account.sortCode}</td>
-                    </tr>
-                    <tr class="blank"></tr>
-                    <tr>
-                        <th>IBAN</th>
-                        <td>${account.iban}</td>
-                    </tr>
-                    <tr>
-                        <th>BIC</th>
-                        <td>${account.bic}</td>
-                    </tr>
-                </table>
-            `
+            "title": "Account Details",
+            "type": "info",
+            "customClass": "swal2-account-details",
+            "html": html
           });
     });
 }
@@ -546,6 +557,7 @@ function loadApp() {
         addColumn("nickname", lf.Type.STRING).
         addColumn("nicknameLower", lf.Type.STRING).
         addColumn("sortCode", lf.Type.STRING).
+        addNullable(["accountNumber", "bic", "iban", "sortCode"]).
         addPrimaryKey(["id"]);
     schemaBuilder.createTable("transactions").
         addColumn("id", lf.Type.STRING).
@@ -612,15 +624,15 @@ function loadApp() {
         for(i in accts) {
             accountRows.push(accounts.createRow({
                 "id": accts[i].id,
-                "accountNumber": accts[i].accountNumber || "",
+                "accountNumber": accts[i].accountNumber,
                 "availableToSpend": accts[i].availableToSpend,
                 "balance": accts[i].balance,
-                "bic": accts[i].bic || "",
+                "bic": accts[i].bic,
                 "currency": accts[i].currency,
-                "iban": accts[i].iban || "",
+                "iban": accts[i].iban,
                 "nickname": accts[i].nickname,
                 "nicknameLower": accts[i].nickname.toLowerCase(),
-                "sortCode": accts[i].sortCode || ""
+                "sortCode": accts[i].sortCode
             }));
         }
         return yammDB.insertOrReplace().into(accounts).values(accountRows).exec();
