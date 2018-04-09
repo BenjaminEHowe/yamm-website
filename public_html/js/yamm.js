@@ -211,7 +211,7 @@ function displayProviders() {
     }).then(function(providers) {
         var availableProviders = [];
 
-        for(i in providers) {
+        for(var i in providers) {
             if (providers[i].minVersion <= version) {
                 availableProviders.push(providers[i]);
             }
@@ -236,12 +236,12 @@ function displayTransactionDetails(id) {
         .select()
         .from(accounts, transactions)
         .where(lf.op.and(
-            transactions.id.eq(id)),
-            accounts.id.eq(transactions.account)
+            accounts.id.eq(transactions.account),
+            transactions.id.eq(id))
         )
     .exec().then(function(transaction) {
         // there should be only one transaction and account per primary key
-        console.log(transaction[0]);
+        console.log(transaction);
         var account = transaction[0].accounts;
         var transaction = transaction[0].transactions;
 
@@ -254,6 +254,17 @@ function displayTransactionDetails(id) {
         } else {
             settled = transaction.settled.toLocaleString();
         }
+
+        // define category HTML
+        var category = categories[transaction.category];
+        var categoryHTML = "<select ";
+        categoryHTML += `style="background:#${category.backgroundColour};color:#${category.textColour}" `;
+        categoryHTML += `onchange="this.setAttribute('style', \`background:#\${categories[this.value].backgroundColour};color:#\${categories[this.value].textColour}\`)">`;
+        for(var rawCategory in categories) {
+            var category = categories[rawCategory];
+            categoryHTML += `<option value=${rawCategory} style="background:#${category.backgroundColour};color:#${category.textColour}"${transaction.category == rawCategory ? " selected" : ""}>${category.name}</option>`;
+        }
+        categoryHTML += "</select>"
 
         swal({
             "title": "Transaction Details",
@@ -279,6 +290,35 @@ function displayTransactionDetails(id) {
                         <th>Amount</th>
                         <td>${formatAmount(transaction.amount, account.currency, true)}</td>
                     </tr>
+                    ${transaction.localCurrency !== undefined && transaction.localCurrency != account.currency ? `
+                        <tr>
+                            <th>Local Amount</th>
+                            <td>${formatAmount(transaction.localAmount, transaction.localCurrency)}</td>
+                        </tr>
+                    ` : ``}
+                    <tr class="blank"></tr>
+                    <tr>
+                        <th>Category</th>
+                        <td>${categoryHTML}</td>
+                    </tr>
+                    <tr class="blank"></tr>
+                    ${transaction.counterpartyName !== undefined ? `
+                        <tr>
+                            <th>Counterparty</th>
+                            <td>${transaction.counterpartyName}</td>
+                        </tr>
+                    ` : ``}
+                    <tr>
+                        <th>Description</th>
+                        <td>${transaction.description}</td>
+                    </tr>
+                    ${transaction.mcc !== undefined ? `
+                        <tr class="blank"></tr>
+                        <tr>
+                            <th><abbr title="Merchant Category Code">MCC</abbr></th>
+                            <td>${transaction.mcc}</td>
+                        </tr>
+                    ` : ``}
                 </table>`
           });
     });
@@ -349,9 +389,7 @@ function displayTransactions() {
                         case "category":
                             var category = categories[results[i].transactions.category];
                             node = document.createTextNode(category.name);
-                            var backgroundColour = category.backgroundColour;
-                            var textColour = category.textColour;
-                            cell.setAttribute("style", "background:#" + backgroundColour + "; color:#" + textColour + "; text-align: center");
+                            cell.setAttribute("style", `background:#${category.backgroundColour};color:#${category.textColour};text-align:center`);
                             break;
 
                         case "date":
@@ -781,7 +819,9 @@ function loadApp() {
             transaction.localCurrency = txns[i].localCurrency;
             transaction.mcc = txns[i].mcc;
             transaction.providerId = txns[i].providerId;
-            transaction.settled = new Date(txns[i].settled);
+            if (txns[i].settled !== undefined) {
+                transaction.settled = new Date(txns[i].settled);
+            }
             transaction.type = txns[i].type;
             transactionRows.push(transactions.createRow(transaction));
         }
@@ -844,7 +884,7 @@ function setPortAndSecret() {
             window.location.replace(url); // redirect to remove parameters        
         }
     } else {
-        for(i in params) {
+        for(var i in params) {
             var param = params[i].split("=");
             if (param[0] == "port") {
                 sessionStorage.port = param[1];
