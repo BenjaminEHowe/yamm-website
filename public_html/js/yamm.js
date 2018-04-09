@@ -1,3 +1,5 @@
+"use strict";
+
 var accounts;
 var categories;
 var transactions;
@@ -240,8 +242,8 @@ function displayTransactionDetails(id) {
     .exec().then(function(transaction) {
         // there should be only one transaction and account per primary key
         console.log(transaction[0]);
-        account = transaction[0].accounts;
-        transaction = transaction[0].transactions;
+        var account = transaction[0].accounts;
+        var transaction = transaction[0].transactions;
 
         // define settlement value
         var settled;
@@ -252,8 +254,6 @@ function displayTransactionDetails(id) {
         } else {
             settled = transaction.settled.toLocaleString();
         }
-
-        var amount
 
         swal({
             "title": "Transaction Details",
@@ -347,9 +347,10 @@ function displayTransactions() {
                             break;
                         
                         case "category":
-                            node = document.createTextNode(categories[results[i].transactions.category].name);
-                            backgroundColour = categories[results[i].transactions.category].backgroundColour;
-                            textColour = categories[results[i].transactions.category].textColour;
+                            var category = categories[results[i].transactions.category];
+                            node = document.createTextNode(category.name);
+                            var backgroundColour = category.backgroundColour;
+                            var textColour = category.textColour;
                             cell.setAttribute("style", "background:#" + backgroundColour + "; color:#" + textColour + "; text-align: center");
                             break;
 
@@ -469,9 +470,9 @@ function displaySpend(days) {
 
         // populate the spend widget
         for (var category in categorySpend) {
-            backgroundColour = categories[category].backgroundColour;
-            textColour = categories[category].textColour;
-            formattedAmount = formatAmount(categorySpend[category], "GBP");
+            var backgroundColour = categories[category].backgroundColour;
+            var textColour = categories[category].textColour;
+            var formattedAmount = formatAmount(categorySpend[category], "GBP");
             if (categorySpend[category] < 0) {
                 // if the spend is negative, i.e. a spend, remove the minus sign
                 formattedAmount = formattedAmount.slice(1);
@@ -488,7 +489,7 @@ function displaySpend(days) {
         }
 
         // define how to create the spend chart
-        createChart = function() {
+        var createChart = function() {
             var data = new google.visualization.DataTable();
             data.addColumn("string", "Category");
             data.addColumn("number", "Amount");
@@ -504,7 +505,7 @@ function displaySpend(days) {
         }
         
         // define how to draw the spend chart
-        drawChart = function(data) {
+        var drawChart = function(data) {
             var options = {
                 "chartArea": {"height": "100%", "width": "100%"},
             };
@@ -514,7 +515,7 @@ function displaySpend(days) {
         }
         
         // draw the chart, or queue the drawing of the chart
-        chart = {"create": createChart, "data": null, "draw": drawChart};
+        var chart = {"create": createChart, "data": null, "draw": drawChart};
         if (googleChartsLoaded) {
             chart.data = chart.create();
             chart.draw(chart.data);
@@ -703,7 +704,7 @@ function loadApp() {
     }).then(function(accts) {
         // insert the data into the accounts table
         var accountRows = [];
-        for(i in accts) {
+        for(var i in accts) {
             accountRows.push(accounts.createRow({
                 "id": accts[i].id,
                 "accountNumber": accts[i].accountNumber,
@@ -745,7 +746,7 @@ function loadApp() {
     }).then(function(txns) {
         // insert the data into the transactions table
         var transactionRows = [];
-        for(i in txns) {
+        for(var i in txns) {
             var transaction = {};
             transaction.id = txns[i].id;
             transaction.account = txns[i].account;
@@ -769,28 +770,9 @@ function loadApp() {
                     transaction.counterpartyAddressStreet = txns[i].counterparty.address.streetAddress;
                 } else {
                     transaction.counterpartyAddressApprox = true;
-                    /*transaction.counterpartyAddressCity = "";
-                    transaction.counterpartyAddressCountry = "";
-                    transaction.counterpartyAddressCounty = "";
-                    transaction.counterpartyAddressLatitude = "";
-                    transaction.counterpartyAddressLongitude = "";
-                    transaction.counterpartyAddressPostcode = "";
-                    transaction.counterpartyAddressStreet = "";*/
                 }
             } else {
-                /*transaction.counterpartyAccountNumber = "";
-                transaction.counterpartyIcon = "";
-                transaction.counterpartyName = "";
-                transaction.counterpartySortCode = "";
-                transaction.counterpartyWebsite = "";*/
                 transaction.counterpartyAddressApprox = true;
-                /*transaction.counterpartyAddressCity = "";
-                transaction.counterpartyAddressCountry = "";
-                transaction.counterpartyAddressCounty = "";
-                transaction.counterpartyAddressLatitude = "";
-                transaction.counterpartyAddressLongitude = "";
-                transaction.counterpartyAddressPostcode = "";
-                transaction.counterpartyAddressStreet = "";*/
             }
             transaction.created = new Date(txns[i].created);
             transaction.declineReason = txns[i].declineReason;
