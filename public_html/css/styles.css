@@ -71,6 +71,10 @@ table#transactions th {
 	text-align: center;
 }
 
+table#transactions tr {
+	cursor: pointer;
+}
+
 table#transactions td {
 	height: 75px;
 }
@@ -109,15 +113,23 @@ tr.blank {
 	padding: 0.5rem 0.75rem;
 }
 
-.swal2-account-details {
-	max-width: 640px!important;
+.swal2-account-details,
+.swal2-transaction-details {
+	max-width: 480px!important;
 	width: 100%!important;
 }
 
-.swal2-account-details .swal2-content {
+.swal2-account-details .swal2-content,
+.swal2-transaction-details .swal2-content {
 	text-align: left!important;
 }
 
-.swal2-account-details table {
+.swal2-account-details table,
+.swal2-transaction-details table {
 	width: 100%;
+}
+
+.swal2-account-details table th,
+.swal2-transaction-details table th {
+	width: 160px;
 }

@@ -66,30 +66,30 @@ function displayAccountDetails(id) {
                         <th>Funds Available</th>
                         <td>${formatAmount(account.availableToSpend, account.currency)}</td>
                     </tr>
-                    ${typeof account.accountNumber != "undefined" || typeof account.sortCode != "undefined" ? `
+                    ${account.accountNumber !== undefined || account.sortCode !== undefined ? `
                         <tr class="blank"></tr>
-                        ${typeof account.accountNumber != "undefined" ? `
+                        ${account.accountNumber !== undefined ? `
                             <tr>
                                 <th>Account Number</th>
                                 <td>${account.accountNumber}</td>
                             </tr>
                         ` : ``}
-                        ${typeof account.sortCode != "undefined" ? `
+                        ${account.sortCode !== undefined ? `
                             <tr>
                                 <th>Sort Code</th>
                                 <td>${account.sortCode}</td>
                             </tr>
                         ` : ``}
                     ` : ``}
-                    ${typeof account.iban != "undefined" || typeof account.bic != "undefined" ? `
+                    ${account.iban !== undefined || account.bic !== undefined ? `
                         <tr class="blank"></tr>
-                        ${typeof account.iban != "undefined" ? `
+                        ${account.iban !== undefined ? `
                             <tr>
                                 <th>IBAN</th>
                                 <td>${account.iban}</td>
                             </tr>
                         ` : ``}
-                        ${typeof account.bic != "undefined" ? `
+                        ${account.bic  !== undefined ? `
                             <tr>
                                 <th>BIC</th>
                                 <td>${account.bic}</td>
@@ -229,6 +229,61 @@ function displayProviders() {
     });
 }
 
+function displayTransactionDetails(id) {
+    yammDB
+        .select()
+        .from(accounts, transactions)
+        .where(lf.op.and(
+            transactions.id.eq(id)),
+            accounts.id.eq(transactions.account)
+        )
+    .exec().then(function(transaction) {
+        // there should be only one transaction and account per primary key
+        console.log(transaction[0]);
+        account = transaction[0].accounts;
+        transaction = transaction[0].transactions;
+
+        // define settlement value
+        var settled;
+        if (transaction.settled === undefined) {
+            settled = "No";
+        } else if (transaction.settled < transaction.created) {
+            settled = "Yes";
+        } else {
+            settled = transaction.settled.toLocaleString();
+        }
+
+        var amount
+
+        swal({
+            "title": "Transaction Details",
+            "type": "info",
+            "customClass": "swal2-transaction-details",
+            "html": `
+                <table>
+                    <tr>
+                        <th>Account</th>
+                        <td>${account.nickname}</td>
+                    </tr>
+                    <tr class="blank"></tr>
+                    <tr>
+                        <th>Created</th>
+                        <td>${transaction.created.toLocaleString()}</td>
+                    </tr>
+                    <tr>
+                        <th>Settled</th>
+                        <td>${settled}</td>
+                    </tr>
+                    <tr class="blank"></tr>
+                    <tr>
+                        <th>Amount</th>
+                        <td>${formatAmount(transaction.amount, account.currency, true)}</td>
+                    </tr>
+                </table>`
+          });
+    });
+}
+
 function displayTransactions() {
     yammDB
         .select()
@@ -262,6 +317,8 @@ function displayTransactions() {
             var tableBody = document.getElementById("transactions").tBodies[0];
             for(var i = 0; i < results.length; i++) {
                 var row = document.createElement("tr");
+                row.id = results[i].transactions.id;
+                row.onclick = function() {displayTransactionDetails(this.id)};
                 for(var j = 0; j < columns.length; j++) {
                     var cell = document.createElement("td");
 
@@ -279,7 +336,7 @@ function displayTransactions() {
                                 cell.setAttribute("class", "text-danger");
                             }
 
-                            if (results[i].transactions.localCurrency.length != 0 && results[i].transactions.localCurrency != results[i].accounts.currency) { // if the transaction is in a foreign currency
+                            if (results[i].transactions.localCurrency !== undefined && results[i].transactions.localCurrency != results[i].accounts.currency) { // if the transaction is in a foreign currency
                                 cell.setAttribute("data-toggle", "tooltip");
                                 cell.setAttribute("title", formatAmount(results[i].transactions.localAmount, results[i].transactions.localCurrency));
                                 styles += "text-decoration: underline; text-decoration-style: dotted;";
@@ -308,7 +365,7 @@ function displayTransactions() {
                             break;
                         
                         case "icon":
-                            if (results[i].transactions.counterpartyIcon.length != 0) { // if the transaction has an icon
+                            if (results[i].transactions.counterpartyIcon !== undefined) { // if the transaction has an icon
                                 node = document.createElement("img");
                                 node.src = results[i].transactions.counterpartyIcon;
                             } else {
@@ -318,7 +375,7 @@ function displayTransactions() {
 
                         case "name":
                             var text;
-                            if (results[i].transactions.counterpartyName.length != 0) {
+                            if (results[i].transactions.counterpartyName !== undefined) {
                                 text = results[i].transactions.counterpartyName;
                                 if (results[i].transactions.counterpartyName != results[i].transactions.description) {
                                     cell.setAttribute("data-toggle", "tooltip");
@@ -516,9 +573,11 @@ function editAccountNickname(id) {
     });
 }
 
-function formatAmount(amount, currency) {
+function formatAmount(amount, currency, alwaysShowSign) {
     // amount: the amount in minor units
     // currency: the ISO 4217 3 character currency code
+    // alwaysShowSign: show sign even if it's unnescasary. default false
+    var alwaysShowSign = alwaysShowSign || false;
 
     // work out how many decimal places the currency has
     var localCurrencyFormatArray = (1).toLocaleString("en-GB", { "style": "currency", "currency": currency }).split(".");
@@ -529,8 +588,13 @@ function formatAmount(amount, currency) {
         decimalPlaces = localCurrencyFormatArray[1].length;
     }
     var foreignAmountDecimal = amount / Math.pow(10, decimalPlaces);
+    var foreignAmountString = foreignAmountDecimal.toLocaleString("en-GB", { "style": "currency", "currency": currency });
 
-    return foreignAmountDecimal.toLocaleString("en-GB", { "style": "currency", "currency": currency });
+    if (alwaysShowSign && amount > 0) {
+        foreignAmountString = "+" + foreignAmountString;
+    }
+
+    return foreignAmountString;
 }
 
 function loadApp() {
@@ -567,6 +631,7 @@ function loadApp() {
         addColumn("counterpartyAddressApprox", lf.Type.BOOLEAN).
         addColumn("counterpartyAddressCity", lf.Type.STRING).
         addColumn("counterpartyAddressCountry", lf.Type.STRING).
+        addColumn("counterpartyAddressCounty", lf.Type.STRING).
         addColumn("counterpartyAddressLatitude", lf.Type.STRING).
         addColumn("counterpartyAddressLongitude", lf.Type.STRING).
         addColumn("counterpartyAddressPostcode", lf.Type.STRING).
@@ -584,7 +649,26 @@ function loadApp() {
         addColumn("providerId", lf.Type.STRING).
         addColumn("settled", lf.Type.DATE_TIME).
         addColumn("type", lf.Type.STRING).
-        addNullable(["localAmount", "settled"]).
+        addNullable([
+            "counterpartyAccountNumber",
+            "counterpartyAddressCity",
+            "counterpartyAddressCountry",
+            "counterpartyAddressCounty",
+            "counterpartyAddressLatitude",
+            "counterpartyAddressLongitude",
+            "counterpartyAddressPostcode",
+            "counterpartyAddressStreet",
+            "counterpartyIcon",
+            "counterpartyName",
+            "counterpartySortCode",
+            "counterpartyWebsite",
+            "declineReason",
+            "localAmount",
+            "localCurrency",
+            "mcc",
+            "providerId",
+            "settled"
+        ]).
         addPrimaryKey(["id"]);
 
     schemaBuilder.connect({storeType: lf.schema.DataStoreType.MEMORY}).then(function(db) {
@@ -669,53 +753,53 @@ function loadApp() {
             transaction.balance = txns[i].balance;
             transaction.category = txns[i].category;
             if (typeof txns[i].counterparty != "undefined") {
-                transaction.counterpartyAccountNumber = txns[i].counterparty.accountNumber || "";
-                transaction.counterpartyIcon = txns[i].counterparty.icon || "";
-                transaction.counterpartyName = txns[i].counterparty.name || "";
-                transaction.counterpartySortCode = txns[i].counterparty.sortCode || "";
-                transaction.counterpartyWebsite = txns[i].counterparty.website || "";
+                transaction.counterpartyAccountNumber = txns[i].counterparty.accountNumber;
+                transaction.counterpartyIcon = txns[i].counterparty.icon;
+                transaction.counterpartyName = txns[i].counterparty.name;
+                transaction.counterpartySortCode = txns[i].counterparty.sortCode;
+                transaction.counterpartyWebsite = txns[i].counterparty.website;
                 if (typeof txns[i].counterparty.address != "undefined") {
                     transaction.counterpartyAddressApprox = txns[i].counterparty.address.approximate || true;
-                    transaction.counterpartyAddressCity = txns[i].counterparty.address.city || "";
-                    transaction.counterpartyAddresscountry = txns[i].counterparty.address.country || "";
-                    transaction.counterpartyAddresscounty = txns[i].counterparty.address.county || "";
-                    transaction.counterpartyAddressLatitude = txns[i].counterparty.address.latitude || "";
-                    transaction.counterpartyAddressLongitude = txns[i].counterparty.address.longitude || "";
-                    transaction.counterpartyAddressPostcode = txns[i].counterparty.address.postcode || "";
-                    transaction.counterpartyAddressStreet = txns[i].counterparty.address.streetAddress || "";
+                    transaction.counterpartyAddressCity = txns[i].counterparty.address.city;
+                    transaction.counterpartyAddressCountry = txns[i].counterparty.address.country;
+                    transaction.counterpartyAddressCounty = txns[i].counterparty.address.county;
+                    transaction.counterpartyAddressLatitude = txns[i].counterparty.address.latitude;
+                    transaction.counterpartyAddressLongitude = txns[i].counterparty.address.longitude;
+                    transaction.counterpartyAddressPostcode = txns[i].counterparty.address.postcode;
+                    transaction.counterpartyAddressStreet = txns[i].counterparty.address.streetAddress;
                 } else {
                     transaction.counterpartyAddressApprox = true;
-                    transaction.counterpartyAddressCity = "";
+                    /*transaction.counterpartyAddressCity = "";
                     transaction.counterpartyAddressCountry = "";
                     transaction.counterpartyAddressCounty = "";
                     transaction.counterpartyAddressLatitude = "";
                     transaction.counterpartyAddressLongitude = "";
                     transaction.counterpartyAddressPostcode = "";
-                    transaction.counterpartyAddressStreet = "";
+                    transaction.counterpartyAddressStreet = "";*/
                 }
             } else {
-                transaction.counterpartyAccountNumber = "";
+                /*transaction.counterpartyAccountNumber = "";
                 transaction.counterpartyIcon = "";
                 transaction.counterpartyName = "";
                 transaction.counterpartySortCode = "";
-                transaction.counterpartyWebsite = "";
+                transaction.counterpartyWebsite = "";*/
                 transaction.counterpartyAddressApprox = true;
-                transaction.counterpartyAddressCity = "";
+                /*transaction.counterpartyAddressCity = "";
                 transaction.counterpartyAddressCountry = "";
                 transaction.counterpartyAddressCounty = "";
                 transaction.counterpartyAddressLatitude = "";
                 transaction.counterpartyAddressLongitude = "";
                 transaction.counterpartyAddressPostcode = "";
-                transaction.counterpartyAddressStreet = "";
+                transaction.counterpartyAddressStreet = "";*/
             }
             transaction.created = new Date(txns[i].created);
-            transaction.declineReason = txns[i].declineReason || "";
+            transaction.declineReason = txns[i].declineReason;
             transaction.description =  txns[i].description;
-            transaction.localAmount = txns[i].localAmount || null;
-            transaction.localCurrency = txns[i].localCurrency || "";
-            transaction.mcc = txns[i].mcc || "";
-            transaction.providerId = txns[i].providerId || "";
-            transaction.settled = new Date(txns[i].settled) || null;
+            transaction.localAmount = txns[i].localAmount;
+            transaction.localCurrency = txns[i].localCurrency;
+            transaction.mcc = txns[i].mcc;
+            transaction.providerId = txns[i].providerId;
+            transaction.settled = new Date(txns[i].settled);
             transaction.type = txns[i].type;
             transactionRows.push(transactions.createRow(transaction));
         }
