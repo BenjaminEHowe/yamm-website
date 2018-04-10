@@ -100,6 +100,11 @@ tr.blank {
 	display: block;
 }
 
+#main-column input {
+	margin-bottom: 0.5rem;
+	width: 100%;
+}
+
 #sidebar-column h2 {
 	margin-bottom: 0.25rem;
 }

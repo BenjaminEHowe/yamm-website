@@ -325,22 +325,23 @@ function displayTransactionDetails(id) {
     });
 }
 
-function displayTransactions() {
+function displayTransactions(query) {
     yammDB
         .select()
         .from(accounts, transactions)
-        .where(accounts.id.eq(transactions.account))
+		.where(lf.op.and(
+			lf.op.or(
+                transactions.descriptionLower.match(query.toLowerCase()),
+                transactions.counterpartyNameLower.match(query.toLowerCase()),
+            ),
+			transactions.account.eq(accounts.id)
+		))
         .orderBy(transactions.created, lf.Order.DESC)
     .exec().then(function(results) {
         console.log("Transactions: ", results); // debug: dump transactions to the console
 
-        document.getElementById("main").getElementsByTagName("div")[0].innerHTML += `
-            <div id="main-column" class="col-lg-9">
-                <h2>Transactions</h2>
-            </div>`;
-
         if (results.length !== 0) {
-            document.getElementById("main-column").innerHTML += `
+            document.getElementById("transactions-results").innerHTML = `
                 <table id="transactions" class="table table-hover">
                     <thead class="thead-light">
                         <tr>
@@ -460,7 +461,11 @@ function displayTransactions() {
                 tableBody.appendChild(row);
             }
         } else {
-            document.getElementById("main-column").innerHTML += "<p>You do not have any transactions loaded into YAMM yet.</p>";
+            if (query === "") {
+                document.getElementById("transactions-results").innerHTML = "<p>You do not have any transactions loaded into YAMM yet.</p>";
+            } else {
+                document.getElementById("transactions-results").innerHTML = `<p>No transactions found matching query "${query}".</p>`;
+            }
         }
     });
 }
@@ -749,11 +754,13 @@ function loadApp() {
         addColumn("counterpartyAddressStreet", lf.Type.STRING).
         addColumn("counterpartyIcon", lf.Type.STRING).
         addColumn("counterpartyName", lf.Type.STRING).
+        addColumn("counterpartyNameLower", lf.Type.STRING).
         addColumn("counterpartySortCode", lf.Type.STRING).
         addColumn("counterpartyWebsite", lf.Type.STRING).
         addColumn("created", lf.Type.DATE_TIME).
         addColumn("declineReason", lf.Type.STRING).
         addColumn("description", lf.Type.STRING).
+        addColumn("descriptionLower", lf.Type.STRING).
         addColumn("localAmount", lf.Type.NUMBER).
         addColumn("localCurrency", lf.Type.STRING).
         addColumn("mcc", lf.Type.STRING).
@@ -771,6 +778,7 @@ function loadApp() {
             "counterpartyAddressStreet",
             "counterpartyIcon",
             "counterpartyName",
+            "counterpartyNameLower",
             "counterpartySortCode",
             "counterpartyWebsite",
             "declineReason",
@@ -867,6 +875,7 @@ function loadApp() {
                 transaction.counterpartyAccountNumber = txns[i].counterparty.accountNumber;
                 transaction.counterpartyIcon = txns[i].counterparty.icon;
                 transaction.counterpartyName = txns[i].counterparty.name;
+                transaction.counterpartyNameLower = txns[i].counterparty.name.toLowerCase();
                 transaction.counterpartySortCode = txns[i].counterparty.sortCode;
                 transaction.counterpartyWebsite = txns[i].counterparty.website;
                 if (txns[i].counterparty.address !== undefined) {
@@ -887,6 +896,7 @@ function loadApp() {
             transaction.created = new Date(txns[i].created);
             transaction.declineReason = txns[i].declineReason;
             transaction.description =  txns[i].description;
+            transaction.descriptionLower =  txns[i].description.toLowerCase();
             transaction.localAmount = txns[i].localAmount;
             transaction.localCurrency = txns[i].localCurrency;
             transaction.mcc = txns[i].mcc;
@@ -917,6 +927,11 @@ function loadApp() {
                     <hr />
                     <div id="sidebar-spend"></div>
                 </div>
+                <div id="main-column" class="col-lg-9">
+                    <h2>Transactions</h2>
+                    <input type="text" placeholder="Filter Transactions" oninput="displayTransactions(this.value);">
+                    <div id="transactions-results"></div>
+                </div>
             </div>`;
 
         displayAccounts(); // display accounts overview & list
@@ -936,7 +951,7 @@ function loadApp() {
             return response.json();
         }).then(function(json) {
             categories = json;
-            displayTransactions(); // display transactions
+            displayTransactions(""); // display transactions
             displaySpend(90); // display spend categories
         });
     });
