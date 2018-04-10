@@ -484,7 +484,9 @@ function displaySpend(days) {
 
         // update the category spend
         for(var i = 0; i < categoriesWithSpend.length; i++) {
-            categorySpend[categoriesWithSpend[i].category] = categoriesWithSpend[i].amount;
+            if (categories[categoriesWithSpend[i].category].includeInSpending) {
+                categorySpend[categoriesWithSpend[i].category] = categoriesWithSpend[i].amount;
+            }
         }
 
         // write the bare spend widget
