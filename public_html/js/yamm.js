@@ -257,14 +257,15 @@ function displayTransactionDetails(id) {
 
         // define category HTML
         var category = categories[transaction.category];
-        var categoryHTML = "<select ";
-        categoryHTML += `style="background:#${category.backgroundColour};color:#${category.textColour}" `;
-        categoryHTML += `onchange="this.setAttribute('style', \`background:#\${categories[this.value].backgroundColour};color:#\${categories[this.value].textColour}\`)">`;
-        for(var rawCategory in categories) {
-            var category = categories[rawCategory];
-            categoryHTML += `<option value=${rawCategory} style="background:#${category.backgroundColour};color:#${category.textColour}"${transaction.category === rawCategory ? " selected" : ""}>${category.name}</option>`;
+        var textColour = category.textColour;
+        if (textColour === "000000") {
+            textColour = "595959";
         }
-        categoryHTML += "</select>"
+        var categoryHTML = "<span ";
+        categoryHTML += `style="background:#${category.backgroundColour};color:#${textColour};`;
+        categoryHTML += `padding:5px;border-radius:5px;border:1px solid grey">`;
+        categoryHTML += `${category.name}</span> `;
+        categoryHTML += `<a href="javascript:editTransactionCategory('${transaction.id}')" style="font-size:small"><i class="fa fa-pencil" aria-hidden="true"></i> edit</a>`;
 
         swal({
             "title": "Transaction Details",
@@ -576,19 +577,19 @@ function editAccountNickname(id) {
                         if (this.status === 204) {
                             resolve({
                                 status: this.status
-                            })
+                            });
                         } else {
                             reject({
                                 status: this.status,
                                 statusText: xhr.statusText
-                            })
+                            });
                         }
                     }
                     xhr.onerror = function() {
                         reject({
                             status: this.status,
                             statusText: xhr.statusText
-                        })
+                        });
                     }
                     xhr.send(JSON.stringify({"nickname": nickname}));
                 })
@@ -597,6 +598,81 @@ function editAccountNickname(id) {
         }).then((result) => {
             swal({
                 title: "Account Nickname Updated",
+                type: "success"
+            });
+        }).then(function() {
+            reset();
+            loadApp();
+        });
+    });
+}
+
+function editTransactionCategory(id) {
+    yammDB
+        .select()
+        .from(transactions)
+        .where(transactions.id.eq(id))
+    .exec().then(function(transaction) {
+        transaction = transaction[0]; // there should only be one transaction per primary key!
+
+        // build the list of options
+        var inputOptions = {};
+        for (var category in categories) {
+            inputOptions[category] = categories[category].name;
+        }
+
+        swal({
+            "confirmButtonText": "Update",
+            "input": "select",
+            "inputOptions": inputOptions,
+            "inputValue": transaction.category,
+            "onBeforeOpen": function(dom) {
+                var select = dom.querySelector(".swal2-select");
+
+                // style the select, apply new styles onchange
+                var category = categories[transaction.category];
+                select.setAttribute("style", `background:#${category.backgroundColour};color:#${category.textColour};display:block`);
+                select.setAttribute("onchange", "this.setAttribute('style', `background:#${categories[this.value].backgroundColour};color:#${categories[this.value].textColour};display:block`)");
+
+                // style the options
+                for (var rawCategory in categories) {
+                    var category = categories[rawCategory];
+                    var option = select.querySelector(`option[value=${rawCategory}]`);
+                    option.setAttribute("style", `background:#${category.backgroundColour};color:#${category.textColour};`);
+                }
+            },
+            "preConfirm": (category) => {
+                return new Promise(function(resolve, reject) {
+                    var xhr = new XMLHttpRequest();
+                    xhr.open("PATCH", `http://127.0.0.1:${sessionStorage.port}/v1/accounts/${transaction.account}/transactions/${transaction.id}?auth=${sessionStorage.secret}`);
+                    xhr.setRequestHeader('Content-type','application/json; charset=utf-8');
+                    xhr.onload = function() {
+                        if (this.status === 204) {
+                            resolve({
+                                status: this.status
+                            });
+                        } else {
+                            reject({
+                                status: this.status,
+                                statusText: xhr.statusText
+                            });
+                        }
+                    }
+                    xhr.onerror = function() {
+                        reject({
+                            status: this.status,
+                            statusText: xhr.statusText
+                        });
+                    }
+                    xhr.send(JSON.stringify({"category": category}));
+                })
+            },
+            "showCancelButton": true,
+            "showLoaderOnConfirm": true,
+            "title": "Update Transaction Category"
+        }).then((result) => {
+            swal({
+                title: "Transaction Category Updated",
                 type: "success"
             });
         }).then(function() {
