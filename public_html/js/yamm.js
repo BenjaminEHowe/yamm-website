@@ -167,7 +167,7 @@ function displayProviders() {
         var xhr = new XMLHttpRequest();
         xhr.open("GET", "http://127.0.0.1:" + sessionStorage.port + "/v1/about?auth=" + sessionStorage.secret, true);
         xhr.onload = function() {
-            if (this.status == 200) {
+            if (this.status === 200) {
                 version = JSON.parse(xhr.response).version;
                 resolve();
             } else {
@@ -190,7 +190,7 @@ function displayProviders() {
             var xhr = new XMLHttpRequest();
             xhr.open("GET", "/json/providers.json", true);
             xhr.onload = function() {
-                if (this.status == 200) {
+                if (this.status === 200) {
                     resolve(JSON.parse(xhr.response));
                 } else {
                     reject({
@@ -219,7 +219,7 @@ function displayProviders() {
 
         document.getElementById("main").innerHTML = "<h2>Add Account</h2>";
 
-        if (availableProviders.length == 0) {
+        if (availableProviders.length === 0) {
             document.getElementById("main").innerHTML += "<div class='alert alert-danger'>No providers available for YAMM client version " + version + "!</div>";
         } else {
             document.getElementById("main").innerHTML += "<ul>";
@@ -262,7 +262,7 @@ function displayTransactionDetails(id) {
         categoryHTML += `onchange="this.setAttribute('style', \`background:#\${categories[this.value].backgroundColour};color:#\${categories[this.value].textColour}\`)">`;
         for(var rawCategory in categories) {
             var category = categories[rawCategory];
-            categoryHTML += `<option value=${rawCategory} style="background:#${category.backgroundColour};color:#${category.textColour}"${transaction.category == rawCategory ? " selected" : ""}>${category.name}</option>`;
+            categoryHTML += `<option value=${rawCategory} style="background:#${category.backgroundColour};color:#${category.textColour}"${transaction.category === rawCategory ? " selected" : ""}>${category.name}</option>`;
         }
         categoryHTML += "</select>"
 
@@ -290,7 +290,7 @@ function displayTransactionDetails(id) {
                         <th>Amount</th>
                         <td>${formatAmount(transaction.amount, account.currency, true)}</td>
                     </tr>
-                    ${transaction.localCurrency !== undefined && transaction.localCurrency != account.currency ? `
+                    ${transaction.localCurrency !== undefined && transaction.localCurrency !== account.currency ? `
                         <tr>
                             <th>Local Amount</th>
                             <td>${formatAmount(transaction.localAmount, transaction.localCurrency)}</td>
@@ -376,7 +376,7 @@ function displayTransactions() {
                                 cell.setAttribute("class", "text-danger");
                             }
 
-                            if (results[i].transactions.localCurrency !== undefined && results[i].transactions.localCurrency != results[i].accounts.currency) { // if the transaction is in a foreign currency
+                            if (results[i].transactions.localCurrency !== undefined && results[i].transactions.localCurrency !== results[i].accounts.currency) { // if the transaction is in a foreign currency
                                 cell.setAttribute("data-toggle", "tooltip");
                                 cell.setAttribute("title", formatAmount(results[i].transactions.localAmount, results[i].transactions.localCurrency));
                                 styles += "text-decoration: underline; text-decoration-style: dotted;";
@@ -393,13 +393,7 @@ function displayTransactions() {
                             break;
 
                         case "date":
-                            var text;
-                            var date = new Date(results[i].transactions.created);
-                            if (date.toLocaleTimeString() == "00:00:00") { // the transaction occurred at *exactly* midnight so just show the date
-                                text = date.toLocaleDateString();
-                            } else {
-                                text = date.toLocaleString();
-                            }
+                            var text = new Date(results[i].transactions.created).toLocaleString();
                             node = document.createTextNode(text);
                             break;
                         
@@ -416,7 +410,7 @@ function displayTransactions() {
                             var text;
                             if (results[i].transactions.counterpartyName !== undefined) {
                                 text = results[i].transactions.counterpartyName;
-                                if (results[i].transactions.counterpartyName != results[i].transactions.description) {
+                                if (results[i].transactions.counterpartyName !== results[i].transactions.description) {
                                     cell.setAttribute("data-toggle", "tooltip");
                                     cell.setAttribute("title", results[i].transactions.description);
                                     cell.setAttribute("style", "text-decoration: underline; text-decoration-style: dotted;");
@@ -579,7 +573,7 @@ function editAccountNickname(id) {
                     xhr.open("PATCH", `http://127.0.0.1:${sessionStorage.port}/v1/accounts/${account.id}?auth=${sessionStorage.secret}`);
                     xhr.setRequestHeader('Content-type','application/json; charset=utf-8');
                     xhr.onload = function() {
-                        if (this.status == 204) {
+                        if (this.status === 204) {
                             resolve({
                                 status: this.status
                             })
@@ -621,7 +615,7 @@ function formatAmount(amount, currency, alwaysShowSign) {
     // work out how many decimal places the currency has
     var localCurrencyFormatArray = (1).toLocaleString("en-GB", { "style": "currency", "currency": currency }).split(".");
     var decimalPlaces;
-    if (localCurrencyFormatArray.length == 1) { // no decimal places
+    if (localCurrencyFormatArray.length === 1) { // no decimal places
         decimalPlaces = 0;
     } else { // some decimal places
         decimalPlaces = localCurrencyFormatArray[1].length;
@@ -721,7 +715,7 @@ function loadApp() {
             var xhr = new XMLHttpRequest();
             xhr.open("GET", "http://127.0.0.1:" + sessionStorage.port + "/v1/accounts?auth=" + sessionStorage.secret, true);
             xhr.onload = function() {
-                if (this.status == 200) {
+                if (this.status === 200) {
                     resolve(JSON.parse(xhr.response));
                 } else {
                     reject({
@@ -763,7 +757,7 @@ function loadApp() {
             var xhr = new XMLHttpRequest();
             xhr.open("GET", "http://127.0.0.1:" + sessionStorage.port + "/v1/transactions?auth=" + sessionStorage.secret, true);
             xhr.onload = function() {
-                if (this.status == 200) {
+                if (this.status === 200) {
                     resolve(JSON.parse(xhr.response));
                 } else {
                     reject({
@@ -791,13 +785,13 @@ function loadApp() {
             transaction.amount = txns[i].amount;
             transaction.balance = txns[i].balance;
             transaction.category = txns[i].category;
-            if (typeof txns[i].counterparty != "undefined") {
+            if (txns[i].counterparty !== undefined) {
                 transaction.counterpartyAccountNumber = txns[i].counterparty.accountNumber;
                 transaction.counterpartyIcon = txns[i].counterparty.icon;
                 transaction.counterpartyName = txns[i].counterparty.name;
                 transaction.counterpartySortCode = txns[i].counterparty.sortCode;
                 transaction.counterpartyWebsite = txns[i].counterparty.website;
-                if (typeof txns[i].counterparty.address != "undefined") {
+                if (txns[i].counterparty.address !== undefined) {
                     transaction.counterpartyAddressApprox = txns[i].counterparty.address.approximate || true;
                     transaction.counterpartyAddressCity = txns[i].counterparty.address.city;
                     transaction.counterpartyAddressCountry = txns[i].counterparty.address.country;
@@ -880,15 +874,15 @@ function reset() {
 function setPortAndSecret() {
     // set port and secret, redirect to remove parameters from URL
     if (sessionStorage.port && sessionStorage.secret) { // if YAMM port and secret have been set
-        if (params.length == 2 && params[0].indexOf("port") != -1 && params[1].indexOf("secret") != -1) { // if they're still in the URL
+        if (params.length === 2 && params[0].indexOf("port") !== -1 && params[1].indexOf("secret") !== -1) { // if they're still in the URL
             window.location.replace(url); // redirect to remove parameters        
         }
     } else {
         for(var i in params) {
             var param = params[i].split("=");
-            if (param[0] == "port") {
+            if (param[0] === "port") {
                 sessionStorage.port = param[1];
-            } else if (param[0] == "secret") {
+            } else if (param[0] === "secret") {
                 sessionStorage.secret = param[1];
             }
         }
@@ -903,7 +897,7 @@ function setPortAndSecret() {
 // set url parameters
 var params;
 var url;
-if (window.location.href.indexOf("#") == -1) {
+if (window.location.href.indexOf("#") === -1) {
     params = [];
     url = window.location.href;
 } else {
