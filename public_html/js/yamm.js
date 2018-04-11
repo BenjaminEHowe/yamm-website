@@ -602,14 +602,15 @@ function editAccountNickname(id) {
                 })
             },
             allowOutsideClick: false
-        }).then((result) => {
-            swal({
-                title: "Account Nickname Updated",
-                type: "success"
-            });
-        }).then(function() {
-            reset();
-            loadApp();
+        }).then(function(result) {
+            if (!result.hasOwnProperty("dismiss")) { // if the user did not dismiss the input request
+                swal({
+                    title: "Account Nickname Updated",
+                    type: "success"
+                });
+                reset();
+                loadApp();
+            }
         });
     });
 }
@@ -680,20 +681,21 @@ function editTransactionCategory(id) {
             "showCancelButton": true,
             "showLoaderOnConfirm": true,
             "title": "Update Transaction Category"
-        }).then((result) => {
-            swal({
-                title: "Transaction Category Updated",
-                type: "success"
-            });
-        }).then(function () {
-            return yammDB
-                .update(transactions)
-                .set(transactions.category, newCategory)
-                .where(transactions.id.eq(id))
-            .exec()
-        }).then(function() {
-            displaySpend(90);
-            displayTransactions(document.getElementById("transactions-query").value);
+        }).then(function(result) {
+            if (!result.hasOwnProperty("dismiss")) { // if the user did not dismiss the input request
+                swal({
+                    title: "Transaction Category Updated",
+                    type: "success"
+                });
+                yammDB
+                    .update(transactions)
+                    .set(transactions.category, newCategory)
+                    .where(transactions.id.eq(id))
+                .exec().then(function() {
+                    displaySpend(90);
+                    displayTransactions(document.getElementById("transactions-query").value);
+                });
+            }
         });
     });
 }
