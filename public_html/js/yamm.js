@@ -615,6 +615,8 @@ function editAccountNickname(id) {
 }
 
 function editTransactionCategory(id) {
+    var newCategory;
+
     yammDB
         .select()
         .from(transactions)
@@ -649,6 +651,7 @@ function editTransactionCategory(id) {
                 }
             },
             "preConfirm": (category) => {
+                newCategory = category;
                 return new Promise(function(resolve, reject) {
                     var xhr = new XMLHttpRequest();
                     xhr.open("PATCH", `http://127.0.0.1:${sessionStorage.port}/v1/accounts/${transaction.account}/transactions/${transaction.id}?auth=${sessionStorage.secret}`);
@@ -671,7 +674,7 @@ function editTransactionCategory(id) {
                             statusText: xhr.statusText
                         });
                     }
-                    xhr.send(JSON.stringify({"category": category}));
+                    xhr.send(JSON.stringify({"category": newCategory}));
                 })
             },
             "showCancelButton": true,
@@ -682,9 +685,15 @@ function editTransactionCategory(id) {
                 title: "Transaction Category Updated",
                 type: "success"
             });
+        }).then(function () {
+            return yammDB
+                .update(transactions)
+                .set(transactions.category, newCategory)
+                .where(transactions.id.eq(id))
+            .exec()
         }).then(function() {
-            reset();
-            loadApp();
+            displaySpend(90);
+            displayTransactions(document.getElementById("transactions-query").value);
         });
     });
 }
@@ -929,7 +938,7 @@ function loadApp() {
                 </div>
                 <div id="main-column" class="col-lg-9">
                     <h2>Transactions</h2>
-                    <input type="text" placeholder="Filter Transactions" oninput="displayTransactions(this.value);">
+                    <input type="text" id="transactions-query" placeholder="Filter Transactions" oninput="displayTransactions(this.value);">
                     <div id="transactions-results"></div>
                 </div>
             </div>`;
