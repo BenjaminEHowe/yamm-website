@@ -472,6 +472,10 @@ function displayTransactions(query) {
 
 function displaySpend(days) {
     // TODO: fix the fact that this breaks for transactions which aren't in GBP
+
+    document.getElementById("sidebar-spend-body").innerHTML = ""; // clear the spend table
+    days = Math.round(days); // round to the nearest whole number of days
+
     var categorySpend = {};
     for(var category in categories) {
         if (categories[category].includeInSpending) {
@@ -493,20 +497,6 @@ function displaySpend(days) {
                 categorySpend[categoriesWithSpend[i].category] = categoriesWithSpend[i].amount;
             }
         }
-
-        // write the bare spend widget
-        document.getElementById("sidebar-spend").innerHTML = `
-            <h2>Spending</h2>
-            <p style="margin-bottom:0.5rem">Over the last ${days} days:</p>
-            <table style="width:100%" class="table">
-                <thead class="thead-light">
-                    <th>Category</th>
-                    <th style="text-align:right">Amount</th>
-                </thead>
-                <tbody id="sidebar-spend-body">
-                </tbody>
-            </table>
-            <div id="sidebar-spend-chart" style="margin-top:0.75rem"></div>`;
 
         // populate the spend widget
         for (var category in categorySpend) {
@@ -936,7 +926,19 @@ function loadApp() {
                     <hr />
                     <div id="sidebar-accounts"></div>
                     <hr />
-                    <div id="sidebar-spend"></div>
+                    <div id="sidebar-spend">
+                        <h2>Spending</h2>
+                        <p style="margin-bottom:0.5rem">Over the last <input type="number" value="90" min="7" step="1" oninput="displaySpend(this.value);"> days:</p>
+                        <table style="width:100%" class="table">
+                            <thead class="thead-light">
+                                <th>Category</th>
+                                <th style="text-align:right">Amount</th>
+                            </thead>
+                            <tbody id="sidebar-spend-body">
+                            </tbody>
+                        </table>
+                        <div id="sidebar-spend-chart" style="margin-top:0.75rem"></div>
+                    </div>
                 </div>
                 <div id="main-column" class="col-lg-9">
                     <h2>Transactions</h2>

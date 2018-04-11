@@ -113,6 +113,10 @@ tr.blank {
 	margin-bottom: 0.35rem;
 }
 
+#sidebar-spend input {
+	width: 3rem;
+}
+
 #sidebar-spend table th,
 #sidebar-spend table td {
 	padding: 0.5rem 0.75rem;
