@@ -120,8 +120,8 @@ function displayAccounts() {
             }
         }
         var balance = positives + negatives;
-        document.getElementById("sidebar-overview").innerHTML = `
-            <h2>Overview</h2>
+        document.getElementById("sidebar-balance").innerHTML = `
+            <h2>Balance</h2>
             <table style="width:100%">
                 <tr class="text-success">
                     <td>Positives</td>
@@ -132,7 +132,7 @@ function displayAccounts() {
                     <td style="text-align:right">${formatAmount(negatives, "GBP")}</td>
                 </tr>
                 <tr class="text-${balance >= 0 ? "success" : "danger"}" style="font-weight: bold">
-                    <td>Balance</td>
+                    <td>Overall</td>
                     <td style="text-align:right">${formatAmount(balance, "GBP")}</td>
                 </tr>
             </table>`;
@@ -922,7 +922,7 @@ function loadApp() {
         document.getElementById("main").innerHTML = `
             <div class="row">
                 <div id="sidebar-column" class="col-lg-3">
-                    <div id="sidebar-overview"></div>
+                    <div id="sidebar-balance"></div>
                     <hr />
                     <div id="sidebar-accounts"></div>
                     <hr />
