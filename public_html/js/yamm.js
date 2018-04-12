@@ -942,7 +942,7 @@ function loadApp() {
                 </div>
                 <div id="main-column" class="col-lg-9">
                     <h2>Transactions</h2>
-                    <input type="text" id="transactions-query" placeholder="Filter Transactions" oninput="displayTransactions(this.value);">
+                    <input type="text" id="transactions-query" placeholder="Filter transactions" oninput="displayTransactions(this.value);">
                     <div id="transactions-results"></div>
                 </div>
             </div>`;
