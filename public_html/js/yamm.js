@@ -262,8 +262,7 @@ function displayTransactionDetails(id) {
             textColour = "595959";
         }
         var categoryHTML = "<span ";
-        categoryHTML += `style="background:#${category.backgroundColour};color:#${textColour};`;
-        categoryHTML += `padding:5px;border-radius:5px;border:1px solid grey">`;
+        categoryHTML += `style="background:#${category.backgroundColour};color:#${textColour};padding:5px">`;
         categoryHTML += `${category.name}</span> `;
         categoryHTML += `<a href="javascript:editTransactionCategory('${transaction.id}')" style="font-size:small"><i class="fa fa-pencil" aria-hidden="true"></i> edit</a>`;
 

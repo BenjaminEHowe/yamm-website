@@ -6,7 +6,7 @@
 		"textColour": "ffffff"
 	},
 	"CHARITY": {
-		"backgroundColour": "ffe119",
+		"backgroundColour": "ffff66",
 		"includeInSpending": true,
 		"name": "Charity",
 		"textColour": "000000"
@@ -24,13 +24,13 @@
 		"textColour": "ffffff"
 	},
 	"ENTERTAINMENT": {
-		"backgroundColour": "f58231",
+		"backgroundColour": "fbb03b",
 		"includeInSpending": true,
 		"name": "Entertainment",
-		"textColour": "ffffff"
+		"textColour": "000000"
 	},
 	"GENERAL": {
-		"backgroundColour": "ffffff",
+		"backgroundColour": "bef0ff",
 		"includeInSpending": true,
 		"name": "General",
 		"textColour": "000000"
