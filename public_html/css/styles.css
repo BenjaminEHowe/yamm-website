@@ -79,6 +79,10 @@ table#transactions td {
 	height: 75px;
 }
 
+table#transactions td.date {
+	text-align: center;
+}
+
 tr.blank {
 	height: 10px;
 }

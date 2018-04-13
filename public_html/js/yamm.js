@@ -394,8 +394,9 @@ function displayTransactions(query) {
                             break;
 
                         case "date":
-                            var text = new Date(results[i].transactions.created).toLocaleString();
-                            node = document.createTextNode(text);
+                            var date = new Date(results[i].transactions.created);
+                            node = document.createTextNode(`${date.toLocaleDateString()} ${date.toLocaleTimeString()}`);
+                            cell.classList.add("date");
                             break;
                         
                         case "icon":
