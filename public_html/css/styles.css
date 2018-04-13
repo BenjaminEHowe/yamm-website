@@ -35,7 +35,7 @@ h2 {
 }
 
 h5 {
-	margin-bottom: 0;
+	margin-bottom: 0.1rem;
 }
 
 main {
@@ -110,12 +110,12 @@ tr.blank {
 	width: 100%;
 }
 
-#sidebar-column h2 {
-	margin-bottom: 0.25rem;
+#sidebar-accounts table {
+	margin-bottom: 0.5rem;
 }
 
-#sidebar-column table {
-	margin-bottom: 0.35rem;
+#sidebar-column h2 {
+	margin-bottom: 0.45rem;
 }
 
 #sidebar-spend input {
@@ -124,7 +124,7 @@ tr.blank {
 
 #sidebar-spend table th,
 #sidebar-spend table td {
-	padding: 0.5rem 0.75rem;
+	padding: 0.25rem 0.6rem;
 }
 
 .swal2-account-details,
