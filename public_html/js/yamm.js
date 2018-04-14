@@ -528,7 +528,7 @@ function displaySpend(days) {
                 data.addRow([
                     categories[category].name,
                     {"v": categorySpend[category], "f": formatAmount(categorySpend[category], "GBP")},
-                    "color:" + categories[category].backgroundColour + "; stroke-color:#000"
+                    "color:" + categories[category].backgroundColour + "; stroke-color:#ccc"
                 ]);
             }
             return data;
