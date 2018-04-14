@@ -929,16 +929,16 @@ function loadApp() {
                     <hr />
                     <div id="sidebar-spend">
                         <h2>Spending</h2>
-                        <p style="margin-bottom:0.5rem">Over the last <input type="number" value="90" min="7" step="1" oninput="displaySpend(this.value);"> days:</p>
-                        <table style="width:100%" class="table">
+                        <p>Over the last <input type="number" value="90" min="7" step="1" oninput="displaySpend(this.value);"> days:</p>
+                        <table class="table">
                             <thead class="thead-light">
                                 <th>Category</th>
-                                <th style="text-align:right">Amount</th>
+                                <th>Amount</th>
                             </thead>
                             <tbody id="sidebar-spend-body">
                             </tbody>
                         </table>
-                        <div id="sidebar-spend-chart" style="margin-top:0.75rem"></div>
+                        <div id="sidebar-spend-chart"></div>
                     </div>
                 </div>
                 <div id="main-column" class="col-lg-9">
