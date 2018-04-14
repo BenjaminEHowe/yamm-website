@@ -57,7 +57,7 @@ function displayAccountDetails(id) {
                 <table>
                     <tr>
                         <th>Nickname</th>
-                        <td>${account.nickname} <a href="javascript:editAccountNickname('${account.id}')" style="font-size:small"><i class="fa fa-pencil" aria-hidden="true"></i> edit</a></td>
+                        <td>${account.nickname} <a href="javascript:editAccountNickname('${account.id}')"><i class="fa fa-pencil" aria-hidden="true"></i> edit</a></td>
                     </tr>
                     <tr class="blank"></tr>
                     <tr>
@@ -122,18 +122,18 @@ function displayAccounts() {
         var balance = positives + negatives;
         document.getElementById("sidebar-balance").innerHTML = `
             <h2>Balance</h2>
-            <table style="width:100%">
+            <table>
                 <tr class="text-success">
                     <td>Positives</td>
-                    <td style="text-align:right">${formatAmount(positives, "GBP")}</td>
+                    <td>${formatAmount(positives, "GBP")}</td>
                 </tr>
                 <tr class="text-danger">
                     <td>Negatives</td>
-                    <td style="text-align:right">${formatAmount(negatives, "GBP")}</td>
+                    <td>${formatAmount(negatives, "GBP")}</td>
                 </tr>
-                <tr class="text-${balance >= 0 ? "success" : "danger"}" style="font-weight: bold">
+                <tr class="text-${balance >= 0 ? "success" : "danger"}">
                     <td>Overall</td>
-                    <td style="text-align:right">${formatAmount(balance, "GBP")}</td>
+                    <td>${formatAmount(balance, "GBP")}</td>
                 </tr>
             </table>`;
 
@@ -141,15 +141,15 @@ function displayAccounts() {
         document.getElementById("sidebar-accounts").innerHTML += "<h2>Accounts</h2>";
         if (accounts.length !== 0) {
             document.getElementById("sidebar-accounts").innerHTML += `${accounts.map(account => `
-                <h5>${account.nickname} <a href="javascript:displayAccountDetails('${account.id}')" style="font-size:small"><i class="fa fa-info-circle" aria-hidden="true"></i> details</a></h5>
-                <table style="width:100%">
+                <h5>${account.nickname} <a href="javascript:displayAccountDetails('${account.id}')"><i class="fa fa-info-circle" aria-hidden="true"></i> details</a></h5>
+                <table>
                     <tr>
                         <td>Balance</td>
-                        <td style="text-align:right">${formatAmount(account.balance, account.currency)}</td>
+                        <td>${formatAmount(account.balance, account.currency)}</td>
                     </tr>
                     <tr>
                         <td>Funds Available</td>
-                        <td style="text-align:right">${formatAmount(account.availableToSpend, account.currency)}</td>
+                        <td>${formatAmount(account.availableToSpend, account.currency)}</td>
                     </tr>
                 </table>
             `).join("")}`;
@@ -261,10 +261,10 @@ function displayTransactionDetails(id) {
         if (textColour === "000000") {
             textColour = "595959";
         }
-        var categoryHTML = "<span ";
-        categoryHTML += `style="background:#${category.backgroundColour};color:#${textColour};padding:5px">`;
+        var categoryHTML = `<span class="category" `;
+        categoryHTML += `style="background:#${category.backgroundColour};color:#${textColour}">`;
         categoryHTML += `${category.name}</span> `;
-        categoryHTML += `<a href="javascript:editTransactionCategory('${transaction.id}')" style="font-size:small"><i class="fa fa-pencil" aria-hidden="true"></i> edit</a>`;
+        categoryHTML += `<a href="javascript:editTransactionCategory('${transaction.id}')"><i class="fa fa-pencil" aria-hidden="true"></i> edit</a>`;
 
         swal({
             "title": "Transaction Details",
@@ -366,31 +366,31 @@ function displayTransactions(query) {
                     var node;
                     switch (columns[j]) {
                         case "amount":
-                            var styles = "text-align:right; white-space:nowrap;" // otherwise the table looks *very* messy
+                            cell.classList.add("amount");
                             var text = formatAmount(results[i].transactions.amount, results[i].accounts.currency);
 
                             if (results[i].transactions.amount > 0) { // if the transaction is a credit
                                 text = "+" + text;
-                                cell.setAttribute("class", "text-success");
+                                cell.classList.add("text-success");
                             } else if (results[i].transactions.amount < 0) { // if the transaction is a debit
                                 text = text.slice(1); // remove the minus sign
-                                cell.setAttribute("class", "text-danger");
+                                cell.classList.add("text-danger");
                             }
 
                             if (results[i].transactions.localCurrency !== undefined && results[i].transactions.localCurrency !== results[i].accounts.currency) { // if the transaction is in a foreign currency
+                                cell.classList.add("foreign");
                                 cell.setAttribute("data-toggle", "tooltip");
                                 cell.setAttribute("title", formatAmount(results[i].transactions.localAmount, results[i].transactions.localCurrency));
-                                styles += "text-decoration: underline; text-decoration-style: dotted;";
                             }
 
-                            cell.setAttribute("style", styles);
                             node = document.createTextNode(text);
                             break;
                         
                         case "category":
+                            cell.classList.add("category");
                             var category = categories[results[i].transactions.category];
                             node = document.createTextNode(category.name);
-                            cell.setAttribute("style", `background:#${category.backgroundColour};color:#${category.textColour};text-align:center`);
+                            cell.setAttribute("style", `background:#${category.backgroundColour};color:#${category.textColour}`);
                             break;
 
                         case "date":
@@ -409,13 +409,14 @@ function displayTransactions(query) {
                             break;
 
                         case "name":
+                            cell.classList.add("name");
                             var text;
                             if (results[i].transactions.counterpartyName !== undefined) {
                                 text = results[i].transactions.counterpartyName;
                                 if (results[i].transactions.counterpartyName !== results[i].transactions.description) {
+                                    cell.classList.add("more");
                                     cell.setAttribute("data-toggle", "tooltip");
                                     cell.setAttribute("title", results[i].transactions.description);
-                                    cell.setAttribute("style", "text-decoration: underline; text-decoration-style: dotted;");
                                 }
                             } else {
                                 text = results[i].transactions.description;
@@ -513,7 +514,7 @@ function displaySpend(days) {
             document.getElementById("sidebar-spend-body").innerHTML += `
                 <tr style="background:#${backgroundColour}; color:#${textColour}">
                     <td>${categories[category].name}</td>
-                    <td style="text-align:right">${formattedAmount}</td>
+                    <td>${formattedAmount}</td>
                 </tr>
             `;
         }
