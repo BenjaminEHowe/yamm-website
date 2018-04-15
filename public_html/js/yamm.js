@@ -993,7 +993,13 @@ function setPortAndSecret() {
                 sessionStorage.secret = param[1];
             }
         }
-        if (sessionStorage.port && sessionStorage.secret) { // if port and secret are now both set
+        if (!(sessionStorage.port && sessionStorage.secret)) { // if port and secret are now both set
+            // remove parameters from URL
+            if (history.replaceState !== undefined) { // if replaceState (HTML5 history API) is supported
+                history.replaceState(null, "", "/app/");
+            } else {
+                window.location.hash = "";
+            }
             window.location.replace(url); // redirect to remove parameters
         } else {
             document.getElementById("main").innerHTML = "<div class='alert alert-danger'>Port and secret not found! Please note that you cannot open YAMM in another tab or browser.</div>";
