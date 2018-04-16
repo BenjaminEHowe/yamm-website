@@ -987,8 +987,7 @@ function setPortAndSecret() {
                 history.replaceState(null, "", "/app/");
             } else {
                 window.location.hash = "";
-            }
-            window.location.replace(url); // redirect to remove parameters     
+            }   
         }
     } else {
         for(var i in params) {
@@ -1006,7 +1005,6 @@ function setPortAndSecret() {
             } else {
                 window.location.hash = "";
             }
-            window.location.replace(url); // redirect to remove parameters
         } else {
             document.getElementById("main").innerHTML = "<div class='alert alert-danger'>Port and secret not found! Please note that you cannot open YAMM in another tab or browser.</div>";
         }
