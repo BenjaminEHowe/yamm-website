@@ -982,7 +982,13 @@ function setPortAndSecret() {
     // set port and secret, redirect to remove parameters from URL
     if (sessionStorage.port && sessionStorage.secret) { // if YAMM port and secret have been set
         if (params.length === 2 && params[0].indexOf("port") !== -1 && params[1].indexOf("secret") !== -1) { // if they're still in the URL
-            window.location.replace(url); // redirect to remove parameters        
+            // remove parameters from URL
+            if (history.replaceState !== undefined) { // if replaceState (HTML5 history API) is supported
+                history.replaceState(null, "", "/app/");
+            } else {
+                window.location.hash = "";
+            }
+            window.location.replace(url); // redirect to remove parameters     
         }
     } else {
         for(var i in params) {
@@ -993,7 +999,7 @@ function setPortAndSecret() {
                 sessionStorage.secret = param[1];
             }
         }
-        if (!(sessionStorage.port && sessionStorage.secret)) { // if port and secret are now both set
+        if (sessionStorage.port && sessionStorage.secret) { // if port and secret are now both set
             // remove parameters from URL
             if (history.replaceState !== undefined) { // if replaceState (HTML5 history API) is supported
                 history.replaceState(null, "", "/app/");
