@@ -202,7 +202,7 @@ function displayProviders() {
 
     // add listener to return button
         document.getElementById("returnLink").addEventListener("click", function(event) {
-            document.getElementById("main").innerHTML = '<img src="/img/loading.svg" id="loading" alt="Loading..." />';
+            reset();
             loadApp();
         });
 
@@ -1053,8 +1053,7 @@ function loadApp() {
 }
 
 function reset() {
-    var appNavbar = document.getElementById("navbar-app");
-    appNavbar.parentNode.removeChild(appNavbar);
+    document.getElementById("navbar-app").innerHTML = "";
     document.getElementById("main").innerHTML = '<img src="/img/loading.svg" id="loading" alt="Loading..." />';
     yammDB.close();
 }
