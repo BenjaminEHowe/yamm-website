@@ -1,10 +1,17 @@
 "use strict";
 
+// variables
 var accounts;
 var categories;
+var charts = [];
+var googleChartsLoaded = false;
+var params;
 var transactions;
+var url;
 var yammDB;
 
+
+// functions
 function addAccount(provider) {
     document.getElementById("main").innerHTML = "<img src='/img/loading.svg' id='loading' alt='Loading...' />";
     var xhr = new XMLHttpRequest();
@@ -45,6 +52,16 @@ function addAccount(provider) {
     };
 }
 
+function createCharts() {
+    googleChartsLoaded = true;
+    // call each "create chart" function
+    for (var i = 0; i < charts.length; i++) {
+        charts[i].data = charts[i].create();
+    }
+    // draw all the charts
+    drawCharts();
+}
+
 function displayAccountDetails(id) {
     yammDB.select().from(accounts).where(accounts.id.eq(id)).exec().then(function(account) {
         account = account[0]; // there should only be one account per primary key!
@@ -57,7 +74,7 @@ function displayAccountDetails(id) {
                 <table>
                     <tr>
                         <th>Nickname</th>
-                        <td>${account.nickname} <a href="javascript:editAccountNickname('${account.id}')"><i class="fa fa-pencil" aria-hidden="true"></i> edit</a></td>
+                        <td>${account.nickname} <a href="#" id="nicknameEditLink"><i class="fa fa-pencil" aria-hidden="true"></i> edit</a></td>
                     </tr>
                     <tr class="blank"></tr>
                     <tr>
@@ -98,7 +115,13 @@ function displayAccountDetails(id) {
                             </tr>
                         ` : ``}
                     ` : ``}
-                </table>`
+                </table>`,
+            "onBeforeOpen": function(dom) {
+                    var editLink = document.getElementById("nicknameEditLink");
+                    editLink.addEventListener("click", function(event) {
+                        editAccountNickname(account.id);
+                    });
+                }
           });
     });
 }
@@ -140,8 +163,9 @@ function displayAccounts() {
         // display accounts list
         document.getElementById("sidebar-accounts").innerHTML += "<h2>Accounts</h2>";
         if (accounts.length !== 0) {
+            // output account details as HTML
             document.getElementById("sidebar-accounts").innerHTML += `${accounts.map(account => `
-                <h5>${account.nickname} <a href="javascript:displayAccountDetails('${account.id}')"><i class="fa fa-info-circle" aria-hidden="true"></i> details</a></h5>
+                <h5>${account.nickname} <a href="#" class="accountDetailsLink" data-account-id="${account.id}"><i class="fa fa-info-circle" aria-hidden="true"></i> details</a></h5>
                 <table>
                     <tr>
                         <td>Balance</td>
@@ -153,6 +177,14 @@ function displayAccounts() {
                     </tr>
                 </table>
             `).join("")}`;
+
+            // add event listener(s) to details link(s)
+            var accountDetailsLinks = document.querySelectorAll("#sidebar-accounts .accountDetailsLink");
+            Array.from(accountDetailsLinks).map(function(accountDetailsLink) {
+                accountDetailsLink.addEventListener("click", function(event) {
+                    displayAccountDetails(this.dataset.accountId);
+                });
+            });
         } else {
             document.getElementById("sidebar-accounts").innerHTML += "<p>You have not added any accounts to YAMM yet.</p>";
         }
@@ -162,7 +194,19 @@ function displayAccounts() {
 function displayProviders() {
     var version;
 
-    return new Promise(function(resolve, reject) {
+    // clear the window
+    document.getElementById("main").innerHTML = '<img src="/img/loading.svg" id="loading" alt="Loading..." />';
+
+    // display the return button
+    document.getElementById("navbar-app").innerHTML = '<li><a href="#" id="returnLink" class="nav-link"><i class="fa fa-arrow-left" aria-hidden="true"></i> Return</a></li>';
+
+    // add listener to return button
+        document.getElementById("returnLink").addEventListener("click", function(event) {
+            document.getElementById("main").innerHTML = '<img src="/img/loading.svg" id="loading" alt="Loading..." />';
+            loadApp();
+        });
+
+    new Promise(function(resolve, reject) {
         // get the client version
         var xhr = new XMLHttpRequest();
         xhr.open("GET", "http://127.0.0.1:" + sessionStorage.port + "/v1/about?auth=" + sessionStorage.secret, true);
@@ -222,11 +266,26 @@ function displayProviders() {
         if (availableProviders.length === 0) {
             document.getElementById("main").innerHTML += "<div class='alert alert-danger'>No providers available for YAMM client version " + version + "!</div>";
         } else {
-            document.getElementById("main").innerHTML += "<ul>";
+            var providerList = document.createElement("ul");
             for(i in availableProviders) {
-                document.getElementById("main").innerHTML += "<li><a href=\"javascript:addAccount('" + availableProviders[i].slug +"')\">" + availableProviders[i].name + "</a></li>";
+                // create the bits and bobs
+                var node = document.createElement("li");
+                var hyperlink = document.createElement("a");
+                var text = document.createTextNode(availableProviders[i].name);
+
+                // set up hyperlink with event listener
+                hyperlink.href = "#";
+                hyperlink.dataset.slug = availableProviders[i].slug;
+                hyperlink.addEventListener("click", function(event) {
+                    addAccount(this.dataset.slug);
+                });
+
+                // connect everything together
+                hyperlink.appendChild(text);
+                node.appendChild(hyperlink);
+                providerList.appendChild(node);
             }
-            document.getElementById("main").innerHTML += "</ul>";
+            document.getElementById("main").appendChild(providerList);
         }
     });
 }
@@ -264,7 +323,7 @@ function displayTransactionDetails(id) {
         var categoryHTML = `<span class="category" `;
         categoryHTML += `style="background:#${category.backgroundColour};color:#${textColour}">`;
         categoryHTML += `${category.name}</span> `;
-        categoryHTML += `<a href="javascript:editTransactionCategory('${transaction.id}')"><i class="fa fa-pencil" aria-hidden="true"></i> edit</a>`;
+        categoryHTML += `<a href="#" id="categoryEditLink"><i class="fa fa-pencil" aria-hidden="true"></i> edit</a>`;
 
         swal({
             "title": "Transaction Details",
@@ -319,7 +378,13 @@ function displayTransactionDetails(id) {
                             <td>${transaction.mcc}</td>
                         </tr>
                     ` : ``}
-                </table>`
+                </table>`,
+                "onBeforeOpen": function(dom) {
+                        var editLink = document.getElementById("categoryEditLink");
+                        editLink.addEventListener("click", function(event) {
+                            editTransactionCategory(transaction.id);
+                        });
+                    }
           });
     });
 }
@@ -555,6 +620,13 @@ function displaySpend(days) {
     });
 }
 
+function drawCharts() {
+    // call each "draw chart" function
+    for (var i = 0; i < charts.length; i++) {
+        charts[i].draw(charts[i].data);
+    }
+}
+
 function editAccountNickname(id) {
     console.log("Editing account nickname for account " + id);
     yammDB.select().from(accounts).where(accounts.id.eq(id)).exec().then(function(account) {
@@ -723,6 +795,14 @@ function loadApp() {
     console.log("https://alpha.yamm.io/app/#port=" + sessionStorage.port + ",secret=" + sessionStorage.secret);
     console.log("https://beta.yamm.io/app/#port=" + sessionStorage.port + ",secret=" + sessionStorage.secret);
     console.log("https://yamm.io/app/#port=" + sessionStorage.port + ",secret=" + sessionStorage.secret);
+
+    // add menu items
+    document.getElementById("navbar-app").innerHTML = '<li><a href="#" id="addAccountLink" class="nav-link"><i class="fa fa-plus" aria-hidden="true"></i> Add account</a></li>';
+    
+    // add menu item listeners
+    document.getElementById("addAccountLink").addEventListener("click", function(event) {
+        displayProviders();
+    });
 
     // create schema for the lovefield database
     var schemaBuilder = lf.schema.create("YAMM", 1);
@@ -912,13 +992,6 @@ function loadApp() {
 
         return yammDB.insertOrReplace().into(transactions).values(transactionRows).exec();
     }).then(function() {
-        // add menu items
-        document.getElementById("navbar").innerHTML += `
-            <ul class="navbar-nav navbar-right" id="navbar-app">
-                <li><a class="nav-link" href="/app/add-account"><i class="fa fa-plus" aria-hidden="true"></i> Add account</a></li>
-            </ul>
-        `;
-
         // add sidebar and main section
         document.getElementById("main").innerHTML = `
             <div class="row">
@@ -929,7 +1002,7 @@ function loadApp() {
                     <hr />
                     <div id="sidebar-spend">
                         <h2>Spending</h2>
-                        <p>Over the last <input type="number" value="90" min="7" step="1" oninput="displaySpend(this.value);"> days:</p>
+                        <p>Over the last <input type="number" value="90" min="7" step="1"> days:</p>
                         <table class="table">
                             <thead class="thead-light">
                                 <th>Category</th>
@@ -943,15 +1016,23 @@ function loadApp() {
                 </div>
                 <div id="main-column" class="col-lg-9">
                     <h2>Transactions</h2>
-                    <input type="text" id="transactions-query" placeholder="Filter transactions" oninput="displayTransactions(this.value);">
+                    <input type="text" id="transactions-query" placeholder="Filter transactions">
                     <div id="transactions-results"></div>
                 </div>
             </div>`;
+        
+        // add listeners for spending (number of days) and transactions (query)
+        document.querySelector("#sidebar-spend input").addEventListener("input", function(event) {
+            displaySpend(this.value);
+        });
+        document.querySelector("#main-column input").addEventListener("input", function(event) {
+            displayTransactions(this.value);
+        });
 
         displayAccounts(); // display accounts overview & list
 
         // fetch the list of categories, parse as JSON, display transactions and spend
-        fetch("/json/categories.json").then(function (response) {
+        fetch("/json/categories.json").then(function(response) {
             // handle potential errors
             if (response.status !== 200) {
                 swal({
@@ -1011,9 +1092,8 @@ function setPortAndSecret() {
     }
 }
 
+
 // set url parameters
-var params;
-var url;
 if (window.location.href.indexOf("#") === -1) {
     params = [];
     url = window.location.href;
@@ -1021,3 +1101,12 @@ if (window.location.href.indexOf("#") === -1) {
     params = window.location.href.split("#")[1].split(",");
     url = window.location.href.split("#")[0];
 }
+setPortAndSecret();
+if (sessionStorage.port && sessionStorage.secret) {
+    loadApp();
+}
+
+// load Google Charts
+google.charts.load('current', {packages: ['corechart', 'bar']});
+google.charts.setOnLoadCallback(createCharts);
+window.onresize = drawCharts;
