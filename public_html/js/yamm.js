@@ -705,7 +705,9 @@ function editTransactionCategory(id) {
                 // style the select, apply new styles onchange
                 var category = categories[transaction.category];
                 select.setAttribute("style", `background:#${category.backgroundColour};color:#${category.textColour};display:block`);
-                select.setAttribute("onchange", "this.setAttribute('style', `background:#${categories[this.value].backgroundColour};color:#${categories[this.value].textColour};display:block`)");
+                select.addEventListener("change", function(event) {
+                    this.setAttribute('style', `background:#${categories[this.value].backgroundColour};color:#${categories[this.value].textColour};display:block`)
+                });
 
                 // style the options
                 for (var rawCategory in categories) {
